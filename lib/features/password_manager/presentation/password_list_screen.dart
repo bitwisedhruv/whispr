@@ -56,6 +56,9 @@ class PasswordListBody extends StatelessWidget {
                 onUnlock: (pin) {
                   context.read<PasswordBloc>().add(UnlockVault(pin));
                 },
+                onBiometricUnlock: () {
+                  context.read<PasswordBloc>().add(UnlockVaultWithBiometrics());
+                },
               );
             },
           );

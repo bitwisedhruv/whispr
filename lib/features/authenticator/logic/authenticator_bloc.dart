@@ -37,9 +37,7 @@ class AuthenticatorBloc extends Bloc<AuthenticatorEvent, AuthenticatorState> {
     Emitter<AuthenticatorState> emit,
   ) async {
     if (_vaultManager.isVaultLocked) {
-      emit(
-        AuthenticatorError('Vault is locked. Please unlock to view 2FA codes.'),
-      );
+      emit(VaultLockedError());
       return;
     }
 

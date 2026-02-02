@@ -72,3 +72,5 @@ class UnlockVault extends PasswordEvent {
   @override
   List<Object?> get props => [pin];
 }
+
+class UnlockVaultWithBiometrics extends PasswordEvent {}

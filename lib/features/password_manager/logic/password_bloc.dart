@@ -20,6 +20,7 @@ class PasswordBloc extends Bloc<PasswordEvent, PasswordState> {
     on<UpdatePassword>(_onUpdatePassword);
     on<DeletePassword>(_onDeletePassword);
     on<UnlockVault>(_onUnlockVault);
+    on<UnlockVaultWithBiometrics>(_onUnlockVaultWithBiometrics);
     on<LockVault>(_onLockVault);
   }
 
@@ -55,6 +56,18 @@ class PasswordBloc extends Bloc<PasswordEvent, PasswordState> {
       add(LoadPasswords());
     } else {
       emit(const PasswordError('Invalid PIN'));
+    }
+  }
+
+  Future<void> _onUnlockVaultWithBiometrics(
+    UnlockVaultWithBiometrics event,
+    Emitter<PasswordState> emit,
+  ) async {
+    // Check if the manager already has the session key (unlocked via biometrics)
+    if (!_vaultManager.isVaultLocked) {
+      add(LoadPasswords());
+    } else {
+      emit(const PasswordError('Vault is still locked. Please try again.'));
     }
   }
 

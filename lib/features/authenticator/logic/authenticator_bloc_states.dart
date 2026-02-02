@@ -58,3 +58,5 @@ class AuthenticatorError extends AuthenticatorState {
   @override
   List<Object?> get props => [message];
 }
+
+class VaultLockedError extends AuthenticatorState {}

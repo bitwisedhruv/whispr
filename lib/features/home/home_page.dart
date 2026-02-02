@@ -9,6 +9,8 @@ import 'package:whispr/features/password_manager/presentation/password_generator
 import 'package:whispr/features/authenticator/logic/authenticator_bloc.dart';
 import 'package:whispr/features/authenticator/logic/authenticator_bloc_states.dart';
 import 'package:whispr/features/authenticator/presentation/qr_scanner_screen.dart';
+import 'package:whispr/features/password_manager/logic/vault_manager.dart';
+import 'package:whispr/features/password_manager/presentation/vault_unlock_screen.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -77,6 +79,8 @@ class HomePage extends StatelessWidget {
                           ),
                         ),
                       ).animate().fadeIn()
+                    else if (state is VaultLockedError)
+                      _buildLockedState(context)
                     else if (state is AuthenticatorLoaded)
                       state.accounts.isEmpty
                           ? const Padding(
@@ -106,9 +110,19 @@ class HomePage extends StatelessWidget {
                             )
                     else if (state is AuthenticatorError)
                       Center(
-                        child: Text(
-                          state.message,
-                          style: const TextStyle(color: Colors.redAccent),
+                        child: Column(
+                          children: [
+                            Text(
+                              state.message,
+                              style: const TextStyle(color: Colors.redAccent),
+                            ),
+                            TextButton(
+                              onPressed: () => context
+                                  .read<AuthenticatorBloc>()
+                                  .add(LoadAuthenticators()),
+                              child: const Text('Retry'),
+                            ),
+                          ],
                         ),
                       ),
 
@@ -248,6 +262,70 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLockedState(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.lock_outline, color: Colors.white24, size: 32),
+          const SizedBox(height: 16),
+          const Text(
+            'Vault is Locked',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          ),
+          const Text(
+            'Unlock to view your 2FA codes',
+            style: TextStyle(color: Colors.white38, fontSize: 14),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => _showUnlockVault(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: WhisprTheme.backgroundColor,
+              minimumSize: const Size(double.infinity, 50),
+            ),
+            child: const Text('Unlock Vault'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUnlockVault(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (c) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: const BoxDecoration(
+          color: WhisprTheme.backgroundColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: VaultUnlockScreen(
+          onUnlock: (pin) async {
+            final success = await VaultManager().unlockWithPin(pin);
+            if (success && context.mounted) {
+              context.read<AuthenticatorBloc>().add(LoadAuthenticators());
+              Navigator.pop(context);
+            }
+          },
+          onBiometricUnlock: () {
+            context.read<AuthenticatorBloc>().add(LoadAuthenticators());
+            Navigator.pop(context);
+          },
+        ),
       ),
     );
   }
