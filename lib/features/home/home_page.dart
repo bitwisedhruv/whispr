@@ -57,9 +57,26 @@ class HomePage extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     if (state is AuthenticatorLoading)
-                      const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.03),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const SizedBox(
+                            height: 24,
+                            width: 100,
+                            child: LinearProgressIndicator(
+                              backgroundColor: Colors.white12,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white30,
+                              ),
+                              minHeight: 1,
+                            ),
+                          ),
+                        ),
+                      ).animate().fadeIn()
                     else if (state is AuthenticatorLoaded)
                       state.accounts.isEmpty
                           ? const Padding(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:whispr/core/theme.dart';
-import 'package:whispr/features/auth/auth_page.dart';
+import 'package:whispr/features/auth/auth_wrapper.dart';
 import 'package:whispr/services/supabase_service.dart';
 
 void main() async {
@@ -21,7 +21,7 @@ class WhisprApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Whispr',
       theme: WhisprTheme.darkTheme,
-      home: const AuthPage(),
+      home: const AuthWrapper(),
     );
   }
 }
