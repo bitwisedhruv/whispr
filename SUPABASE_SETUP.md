@@ -180,3 +180,42 @@ create policy "Users can delete their own passwords"
 2.  **Verify Column Types**:
     -   All secret data (username, password, notes) is stored as `text` because it will hold the base64-encoded encrypted strings.
     -   The `user_id` is automatically set to the logged-in user's ID.
+
+---
+
+## Authenticator Setup
+
+To store your encrypted TOTP secrets, run this script in the Supabase **SQL Editor**.
+
+```sql
+-- 1. Create the authenticators table
+create table if not exists public.authenticators (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null default auth.uid(),
+  issuer text not null,
+  account_name text not null,
+  encrypted_secret text not null,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+-- 2. Enable Row Level Security (RLS)
+alter table public.authenticators enable row level security;
+
+-- 3. Create fresh policies
+drop policy if exists "Users can only see their own authenticators" on authenticators;
+drop policy if exists "Users can insert their own authenticators" on authenticators;
+drop policy if exists "Users can delete their own authenticators" on authenticators;
+
+create policy "Users can only see their own authenticators" 
+  on authenticators for select 
+  using (auth.uid() = user_id);
+
+create policy "Users can insert their own authenticators" 
+  on authenticators for insert 
+  with check (auth.uid() = user_id);
+
+create policy "Users can delete their own authenticators" 
+  on authenticators for delete 
+  using (auth.uid() = user_id);
+```

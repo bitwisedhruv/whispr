@@ -103,7 +103,7 @@ class _PasswordGeneratorScreenState extends State<PasswordGeneratorScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 24),
                 _buildDisplayArea(strengthColor),
@@ -125,7 +125,7 @@ class _PasswordGeneratorScreenState extends State<PasswordGeneratorScreen> {
   Widget _buildDisplayArea(Color accentColor) {
     return GlassContainer.frostedGlass(
       height: 120,
-      width: double.infinity,
+      width: MediaQuery.sizeOf(context).width - 48,
       borderRadius: BorderRadius.circular(24),
       borderWidth: 1,
       borderColor: Colors.white.withValues(alpha: 0.1),

@@ -169,7 +169,7 @@ class PasswordListBody extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: GlassContainer.frostedGlass(
         height: 100,
-        width: double.infinity,
+        width: MediaQuery.sizeOf(context).width - 48,
         borderRadius: BorderRadius.circular(24),
         borderWidth: 1,
         borderColor: Colors.white.withValues(alpha: 0.1),

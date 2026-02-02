@@ -86,6 +86,14 @@ class VaultManager {
     _sessionKey = null;
   }
 
+  /// Reset the vault (deletes stored PIN and salt).
+  /// WARNING: This will make all existing local encrypted data unrecoverable.
+  Future<void> resetVault() async {
+    await _storage.delete(key: _pinKey);
+    await _storage.delete(key: _saltKey);
+    _sessionKey = null;
+  }
+
   /// Helper to get user's SALT (for multi-device sync - in future)
   Future<String?> getSalt() async => await _storage.read(key: _saltKey);
 }

@@ -1,106 +1,170 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:whispr/core/theme.dart';
 import 'package:whispr/services/supabase_service.dart';
 import 'package:whispr/features/auth/auth_page.dart';
 import 'package:whispr/features/password_manager/presentation/password_list_screen.dart';
 import 'package:whispr/features/password_manager/presentation/password_generator_screen.dart';
+import 'package:whispr/features/authenticator/logic/authenticator_bloc.dart';
+import 'package:whispr/features/authenticator/logic/authenticator_bloc_states.dart';
+import 'package:whispr/features/authenticator/presentation/qr_scanner_screen.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text('Whispr'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, size: 20),
-            onPressed: () async {
-              await SupabaseService.signOut();
-              if (context.mounted) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => const AuthPage()),
-                );
-              }
+    return BlocProvider(
+      create: (context) => AuthenticatorBloc()..add(LoadAuthenticators()),
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: const Text('Whispr'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout, size: 20),
+              onPressed: () async {
+                await SupabaseService.signOut();
+                if (context.mounted) {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const AuthPage()),
+                  );
+                }
+              },
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: WhisprTheme.backgroundGradient,
+          ),
+          child: BlocBuilder<AuthenticatorBloc, AuthenticatorState>(
+            builder: (context, state) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: kToolbarHeight + 40),
+                    Text(
+                      'Authenticator',
+                      style: Theme.of(context).textTheme.displayMedium,
+                    ).animate().fadeIn().slideX(begin: -0.1),
+                    const SizedBox(height: 24),
+
+                    if (state is AuthenticatorLoading)
+                      const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      )
+                    else if (state is AuthenticatorLoaded)
+                      state.accounts.isEmpty
+                          ? const Padding(
+                              padding: EdgeInsets.only(top: 20),
+                              child: Text(
+                                'No accounts added yet. Tap + to add one.',
+                                style: TextStyle(color: Colors.white60),
+                              ),
+                            )
+                          : Column(
+                              children: state.accounts
+                                  .map(
+                                    (acc) => Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 16,
+                                      ),
+                                      child: _buildOTPCard(
+                                        context,
+                                        acc.issuer,
+                                        acc.accountName,
+                                        state.currentCodes[acc.id] ?? '000 000',
+                                        state.remainingSeconds,
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            )
+                    else if (state is AuthenticatorError)
+                      Center(
+                        child: Text(
+                          state.message,
+                          style: const TextStyle(color: Colors.redAccent),
+                        ),
+                      ),
+
+                    const SizedBox(height: 48),
+                    Text(
+                      'Quick Tools',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ).animate().fadeIn(delay: 300.ms),
+                    const SizedBox(height: 24),
+                    _buildToolCard(
+                      context,
+                      'Password Vault',
+                      'Access your secure encrypted credentials',
+                      Icons.lock_outline,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const PasswordListScreen(),
+                          ),
+                        );
+                      },
+                    ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
+                    const SizedBox(height: 16),
+                    _buildToolCard(
+                      context,
+                      'Password Generator',
+                      'Generate ultra-secure phrases',
+                      Icons.key_outlined,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const PasswordGeneratorScreen(),
+                          ),
+                        );
+                      },
+                    ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
+                    const SizedBox(height: 16),
+                    _buildToolCard(
+                      context,
+                      'Security Audit',
+                      'Check for compromised passes',
+                      Icons.security_outlined,
+                    ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              );
             },
           ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: WhisprTheme.backgroundGradient,
         ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: kToolbarHeight + 40),
-              Text(
-                'Authenticator',
-                style: Theme.of(context).textTheme.displayMedium,
-              ).animate().fadeIn().slideX(begin: -0.1),
-              const SizedBox(height: 24),
-              _buildOTPCard(context, 'Google', 'user@gmail.com', '482 910'),
-              const SizedBox(height: 16),
-              _buildOTPCard(context, 'GitHub', 'dev_dhruv', '102 394'),
-              const SizedBox(height: 48),
-              Text(
-                'Quick Tools',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ).animate().fadeIn(delay: 300.ms),
-              const SizedBox(height: 24),
-              _buildToolCard(
-                context,
-                'Password Vault',
-                'Access your secure encrypted credentials',
-                Icons.lock_outline,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const PasswordListScreen(),
-                    ),
+        floatingActionButton: Builder(
+          builder: (context) {
+            return FloatingActionButton(
+              onPressed: () async {
+                final result = await Navigator.of(context).push<String>(
+                  MaterialPageRoute(
+                    builder: (context) => const QRScannerScreen(),
+                  ),
+                );
+                if (result != null && context.mounted) {
+                  context.read<AuthenticatorBloc>().add(
+                    AddAuthenticator(result),
                   );
-                },
-              ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
-              const SizedBox(height: 16),
-              _buildToolCard(
-                context,
-                'Password Generator',
-                'Generate ultra-secure phrases',
-                Icons.key_outlined,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const PasswordGeneratorScreen(),
-                    ),
-                  );
-                },
-              ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
-              const SizedBox(height: 16),
-              _buildToolCard(
-                context,
-                'Security Audit',
-                'Check for compromised passes',
-                Icons.security_outlined,
-              ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1),
-              const SizedBox(height: 40),
-            ],
-          ),
+                }
+              },
+              backgroundColor: Colors.white,
+              foregroundColor: WhisprTheme.backgroundColor,
+              child: const Icon(Icons.add),
+            ).animate().scale(delay: 600.ms, curve: Curves.easeOutBack);
+          },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: Colors.white,
-        foregroundColor: WhisprTheme.backgroundColor,
-        child: const Icon(Icons.add),
-      ).animate().scale(delay: 600.ms, curve: Curves.easeOutBack),
     );
   }
 
@@ -109,7 +173,13 @@ class HomePage extends StatelessWidget {
     String title,
     String subtitle,
     String code,
+    int remainingSeconds,
   ) {
+    String formattedCode = code;
+    if (code.length == 6) {
+      formattedCode = '${code.substring(0, 3)} ${code.substring(3)}';
+    }
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -134,14 +204,31 @@ class HomePage extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            code,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 2,
-              color: Colors.white,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                formattedCode,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              SizedBox(
+                width: 60,
+                child: LinearProgressIndicator(
+                  value: remainingSeconds / 30,
+                  backgroundColor: Colors.white12,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    remainingSeconds < 5 ? Colors.redAccent : Colors.white60,
+                  ),
+                  minHeight: 2,
+                ),
+              ),
+            ],
           ),
         ],
       ),

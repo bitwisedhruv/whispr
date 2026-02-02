@@ -71,10 +71,55 @@ class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
                   icon: const Icon(Icons.fingerprint),
                   label: const Text('Unlock with Biometrics'),
                 ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: _showResetConfirmation,
+                  child: const Text(
+                    'Forgot PIN? Reset Vault',
+                    style: TextStyle(color: Colors.white38, fontSize: 12),
+                  ),
+                ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showResetConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: WhisprTheme.backgroundColor,
+        title: const Text('Reset Vault?'),
+        content: const Text(
+          'This will permanently delete your stored PIN and salt. '
+          'Your existing passwords and TOTP codes will be lost if you don\'t remember your original PIN.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await VaultManager().resetVault();
+              if (mounted) {
+                Navigator.pop(context);
+                // Trigger a re-check or navigation to setup
+                Navigator.of(
+                  context,
+                ).pushReplacementNamed('/'); // Go back to start
+              }
+            },
+            child: const Text(
+              'Reset',
+              style: TextStyle(color: Colors.redAccent),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -88,10 +133,13 @@ class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
       textAlign: TextAlign.center,
       style: const TextStyle(fontSize: 32, letterSpacing: 16),
       onChanged: (val) {
-        if (val.length >= 4) {
+        // Only auto-unlock if it's exactly 6 digits (or whatever length the user wants)
+        // Removing the hardcoded 4-digit auto-unlock to fix the user's issue.
+        if (val.length == 6) {
           _unlock();
         }
       },
+      onSubmitted: (_) => _unlock(),
       decoration: InputDecoration(
         hintText: 'PIN',
         hintStyle: const TextStyle(fontSize: 20, letterSpacing: 0),
