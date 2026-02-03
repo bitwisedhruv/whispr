@@ -1,0 +1,8 @@
+[info] Don't invoke 'print' in production code (C:\Code Playground\Flutter Projects\whispr\lib\features\authenticator\logic\authenticator_bloc.dart:85:9)
+[info] Statements in an if should be enclosed in a block (C:\Code Playground\Flutter Projects\whispr\lib\features\password_manager\data\password_repository.dart:35:7)
+[info] Don't invoke 'print' in production code (C:\Code Playground\Flutter Projects\whispr\lib\features\password_manager\logic\encryption_service.dart:54:7)
+[info] 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre (C:\Code Playground\Flutter Projects\whispr\lib\features\password_manager\presentation\password_generator_screen.dart:251:13)
+[info] Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check (C:\Code Playground\Flutter Projects\whispr\lib\features\password_manager\presentation\vault_unlock_screen.dart:139:31)
+[info] Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check (C:\Code Playground\Flutter Projects\whispr\lib\features\password_manager\presentation\vault_unlock_screen.dart:142:19)
+[info] Statements in an if should be enclosed in a block (C:\Code Playground\Flutter Projects\whispr\lib\features\security_audit\presentation\security_audit_screen.dart:137:7)
+[info] Statements in an if should be enclosed in a block (C:\Code Playground\Flutter Projects\whispr\lib\features\security_audit\presentation\security_audit_screen.dart:139:7)
