@@ -11,6 +11,7 @@ import 'package:whispr/features/authenticator/logic/authenticator_bloc_states.da
 import 'package:whispr/features/authenticator/presentation/qr_scanner_screen.dart';
 import 'package:whispr/features/password_manager/logic/vault_manager.dart';
 import 'package:whispr/features/password_manager/presentation/vault_unlock_screen.dart';
+import 'package:whispr/features/security_audit/presentation/security_audit_screen.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -166,6 +167,13 @@ class HomePage extends StatelessWidget {
                       'Security Audit',
                       'Check for compromised passes',
                       Icons.security_outlined,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const SecurityAuditScreen(),
+                          ),
+                        );
+                      },
                     ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1),
                     const SizedBox(height: 40),
                   ],
@@ -240,6 +248,7 @@ class HomePage extends StatelessWidget {
             children: [
               Text(
                 formattedCode,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,

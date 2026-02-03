@@ -48,7 +48,8 @@ create table if not exists public.profiles (
   id uuid references auth.users not null primary key,
   updated_at timestamp with time zone default now(),
   full_name text,
-  avatar_url text
+  avatar_url text,
+  vault_salt text
 );
 
 -- 2. Enable Row Level Security (RLS)
@@ -94,6 +95,16 @@ create trigger on_auth_user_created
 *   **Order Matters**: The table is created first so the function (Step 4) has a destination for data.
 *   **Security**: RLS (Step 2 & 3) ensures that even though the table exists, users can't mess with each other's data.
 *   **Automation**: The Trigger (Step 5) handles the "glue" between Supabase Auth and your custom data automatically.
+
+---
+
+## Updating Existing Tables (Migration)
+If you already have the tables and just need to add the new `vault_salt` column, run this:
+
+```sql
+ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS vault_salt text;
+```
 
 ---
 

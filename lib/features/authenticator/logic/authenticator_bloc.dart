@@ -82,6 +82,7 @@ class AuthenticatorBloc extends Bloc<AuthenticatorEvent, AuthenticatorState> {
         final secret = _encryptionService.decryptText(acc.encryptedSecret, key);
         codes[acc.id!] = _authenticatorService.generateTOTP(secret);
       } catch (e) {
+        print('Authenticator Decryption Error for ${acc.accountName}: $e');
         codes[acc.id!] = "Error";
       }
     }

@@ -1,20 +1,24 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:encrypt/encrypt.dart' as encrypt;
-import 'package:crypto/crypto.dart';
+import 'package:pointycastle/export.dart';
 
 class EncryptionService {
   static final EncryptionService _instance = EncryptionService._internal();
   factory EncryptionService() => _instance;
   EncryptionService._internal();
 
-  /// Derives a 32-byte key from a PIN and a salt using SHA-256.
-  /// In a production environment, PBKDF2 or Argon2 would be better,
-  /// but SHA-256 is a good starting point for this implementation.
+  /// Derives a 32-byte key from a PIN and a salt using PBKDF2 with 100,000 iterations.
+  /// This provides significant resistance against brute-force attacks.
   encrypt.Key deriveKey(String pin, String salt) {
-    final bytes = utf8.encode(pin + salt);
-    final digest = sha256.convert(bytes);
-    return encrypt.Key(Uint8List.fromList(digest.bytes));
+    final saltBytes = Uint8List.fromList(utf8.encode(salt));
+    final pinBytes = Uint8List.fromList(utf8.encode(pin));
+
+    final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
+      ..init(Pbkdf2Parameters(saltBytes, 100000, 32));
+
+    final keyBytes = derivator.process(pinBytes);
+    return encrypt.Key(keyBytes);
   }
 
   /// Encrypts plain text using the provided key.
@@ -47,7 +51,8 @@ class EncryptionService {
       );
       return encrypter.decrypt(encrypt.Encrypted(ciphertext), iv: iv);
     } catch (e) {
-      throw Exception('Decryption failed: Likely wrong key or corrupted data.');
+      print('EncryptionService: Decryption failed - $e');
+      throw Exception('Decryption failed: ${e.toString()}');
     }
   }
 }

@@ -70,7 +70,10 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
         avatarUrl = await SupabaseService.uploadAvatar(_pickedImage!);
       }
 
-      await SupabaseService.updateProfile(_fullNameController.text, avatarUrl);
+      await SupabaseService.updateProfile(
+        fullName: _fullNameController.text,
+        avatarUrl: avatarUrl,
+      );
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const HomePage()),

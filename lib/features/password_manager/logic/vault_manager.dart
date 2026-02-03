@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:whispr/services/supabase_service.dart';
 import 'encryption_service.dart';
 
 class VaultManager {
@@ -28,7 +29,15 @@ class VaultManager {
 
   /// Sets up the vault with a new PIN.
   Future<void> setupVault(String pin) async {
-    final salt = DateTime.now().millisecondsSinceEpoch.toString();
+    // Check if a salt already exists in Supabase
+    String? salt = await SupabaseService.getVaultSalt();
+
+    if (salt == null) {
+      // New user or no salt synced yet
+      salt = DateTime.now().millisecondsSinceEpoch.toString();
+      await SupabaseService.updateProfile(vaultSalt: salt);
+    }
+
     await _storage.write(key: _pinKey, value: pin);
     await _storage.write(key: _saltKey, value: salt);
 
@@ -39,7 +48,15 @@ class VaultManager {
   /// Unlocks the vault using the PIN.
   Future<bool> unlockWithPin(String pin) async {
     final storedPin = await _storage.read(key: _pinKey);
-    final salt = await _storage.read(key: _saltKey);
+    String? salt = await _storage.read(key: _saltKey);
+
+    // If local salt is missing but user is logged in, try to fetch from Supabase
+    if (salt == null && SupabaseService.currentUser != null) {
+      salt = await SupabaseService.getVaultSalt();
+      if (salt != null) {
+        await _storage.write(key: _saltKey, value: salt);
+      }
+    }
 
     if (storedPin == pin && salt != null) {
       _sessionKey = _encryptionService.deriveKey(pin, salt);
@@ -69,7 +86,16 @@ class VaultManager {
 
       if (didAuthenticate) {
         final pin = await _storage.read(key: _pinKey);
-        final salt = await _storage.read(key: _saltKey);
+        String? salt = await _storage.read(key: _saltKey);
+
+        // If local salt is missing but user is logged in, try to fetch from Supabase
+        if (salt == null && SupabaseService.currentUser != null) {
+          salt = await SupabaseService.getVaultSalt();
+          if (salt != null) {
+            await _storage.write(key: _saltKey, value: salt);
+          }
+        }
+
         if (pin != null && salt != null) {
           _sessionKey = _encryptionService.deriveKey(pin, salt);
           return true;

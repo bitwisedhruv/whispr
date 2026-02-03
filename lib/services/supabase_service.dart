@@ -51,16 +51,29 @@ class SupabaseService {
     return response;
   }
 
-  static Future<void> updateProfile(String fullName, String avatarUrl) async {
+  static Future<void> updateProfile({
+    String? fullName,
+    String? avatarUrl,
+    String? vaultSalt,
+  }) async {
     final user = currentUser;
     if (user == null) throw Exception('No user logged in');
 
-    await client.from('profiles').upsert({
+    final Map<String, dynamic> updates = {
       'id': user.id,
-      'full_name': fullName,
-      'avatar_url': avatarUrl,
       'updated_at': DateTime.now().toIso8601String(),
-    });
+    };
+
+    if (fullName != null) updates['full_name'] = fullName;
+    if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
+    if (vaultSalt != null) updates['vault_salt'] = vaultSalt;
+
+    await client.from('profiles').upsert(updates);
+  }
+
+  static Future<String?> getVaultSalt() async {
+    final profile = await getProfile();
+    return profile?['vault_salt'] as String?;
   }
 
   static Future<String> uploadAvatar(File file) async {
