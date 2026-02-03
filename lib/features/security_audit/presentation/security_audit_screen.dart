@@ -1,7 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:glass_kit/glass_kit.dart';
 import 'package:whispr/core/theme.dart';
 import 'logic/audit_bloc.dart';
 import 'logic/audit_bloc_states.dart';
@@ -20,24 +20,30 @@ class SecurityAuditScreen extends StatelessWidget {
           title: const Text('Security Audit'),
           backgroundColor: Colors.transparent,
         ),
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: WhisprTheme.backgroundGradient,
-          ),
-          child: BlocBuilder<AuditBloc, AuditState>(
-            builder: (context, state) {
-              if (state is AuditLoading) {
-                return _buildLoading(state.message);
-              } else if (state is AuditCompleted) {
-                return _buildAuditResults(context, state);
-              } else if (state is AuditError) {
-                return _buildError(context, state.message);
-              }
-              return const SizedBox.shrink();
-            },
-          ),
+        body: Stack(
+          children: [
+            Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: WhisprTheme.backgroundGradient,
+              ),
+            ),
+            Positioned.fill(
+              child: BlocBuilder<AuditBloc, AuditState>(
+                builder: (context, state) {
+                  if (state is AuditLoading) {
+                    return _buildLoading(state.message);
+                  } else if (state is AuditCompleted) {
+                    return _buildAuditResults(context, state);
+                  } else if (state is AuditError) {
+                    return _buildError(context, state.message);
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -81,6 +87,7 @@ class SecurityAuditScreen extends StatelessWidget {
   Widget _buildAuditResults(BuildContext context, AuditCompleted state) {
     final report = state.report;
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,9 +145,9 @@ class SecurityAuditScreen extends StatelessWidget {
     else if (score < 80)
       scoreColor = Colors.orangeAccent;
 
-    return GlassContainer.frostedGlass(
+    return _buildGlassCard(
+      context,
       height: 180,
-      width: double.infinity,
       borderRadius: BorderRadius.circular(32),
       child: Center(
         child: Column(
@@ -173,11 +180,38 @@ class SecurityAuditScreen extends StatelessWidget {
     ).animate().scale(delay: 100.ms, curve: Curves.easeOutBack);
   }
 
+  Widget _buildGlassCard(
+    BuildContext context, {
+    required Widget child,
+    double? height,
+    double? width,
+    EdgeInsetsGeometry? padding,
+    BorderRadius? borderRadius,
+  }) {
+    final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(24);
+    return ClipRRect(
+      borderRadius: effectiveBorderRadius,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          height: height,
+          width: width ?? MediaQuery.sizeOf(context).width - 48,
+          padding: padding,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: effectiveBorderRadius,
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+
   Widget _buildLockedWarning(BuildContext context) {
-    return GlassContainer.frostedGlass(
+    return _buildGlassCard(
+      context,
       padding: const EdgeInsets.all(24),
-      width: double.infinity,
-      borderRadius: BorderRadius.circular(24),
       child: Column(
         children: [
           const Icon(Icons.info_outline, color: Colors.white60),
@@ -208,10 +242,9 @@ class SecurityAuditScreen extends StatelessWidget {
   }
 
   Widget _buildAiCard(BuildContext context, String text) {
-    return GlassContainer.frostedGlass(
+    return _buildGlassCard(
+      context,
       padding: const EdgeInsets.all(24),
-      width: double.infinity,
-      borderRadius: BorderRadius.circular(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

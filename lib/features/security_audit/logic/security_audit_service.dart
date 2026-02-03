@@ -12,7 +12,7 @@ class SecurityAuditService {
     }
 
     final String url =
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$_apiKey';
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$_apiKey';
 
     // Prepare metadata for AI
     final List<Map<String, dynamic>> findingsMetadata = report.findings
@@ -70,6 +70,9 @@ INSTRUCTIONS:
       } else {
         return "Failed to get AI interpretation. Status code: ${response.statusCode}";
       }
+    } on DioException catch (e) {
+      final responseBody = e.response?.data;
+      return "AI service error (${e.response?.statusCode}): $responseBody";
     } catch (e) {
       return "Error connecting to AI service: ${e.toString()}";
     }
