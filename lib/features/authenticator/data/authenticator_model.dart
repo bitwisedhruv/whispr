@@ -4,6 +4,7 @@ class AuthenticatorModel {
   final String issuer;
   final String accountName;
   final String encryptedSecret;
+  final String? note;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -13,6 +14,7 @@ class AuthenticatorModel {
     required this.issuer,
     required this.accountName,
     required this.encryptedSecret,
+    this.note,
     this.createdAt,
     this.updatedAt,
   });
@@ -24,6 +26,7 @@ class AuthenticatorModel {
       issuer: json['issuer'],
       accountName: json['account_name'],
       encryptedSecret: json['encrypted_secret'],
+      note: json['note'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : null,
@@ -40,6 +43,8 @@ class AuthenticatorModel {
       'issuer': issuer,
       'account_name': accountName,
       'encrypted_secret': encryptedSecret,
+      if (note != null) 'note': note,
+      if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
     };
   }
 
@@ -49,6 +54,7 @@ class AuthenticatorModel {
     String? issuer,
     String? accountName,
     String? encryptedSecret,
+    String? note,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -58,6 +64,7 @@ class AuthenticatorModel {
       issuer: issuer ?? this.issuer,
       accountName: accountName ?? this.accountName,
       encryptedSecret: encryptedSecret ?? this.encryptedSecret,
+      note: note ?? this.note,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -108,6 +108,41 @@ class AuthenticatorBloc extends Bloc<AuthenticatorEvent, AuthenticatorState> {
       return;
     }
 
+    final issuer = parsed['issuer']!;
+    final accountName = parsed['accountName']!;
+
+    // Duplicate Detection Check
+    if (!event.force) {
+      final currentState = state;
+      List<AuthenticatorModel> existingAccounts = [];
+      if (currentState is AuthenticatorLoaded) {
+        existingAccounts = currentState.accounts;
+      } else {
+        // If not loaded, we should load them first or handle gracefully
+        try {
+          existingAccounts = await _repository.getAuthenticators();
+        } catch (_) {}
+      }
+
+      final isDuplicate = existingAccounts.any(
+        (acc) =>
+            acc.issuer.toLowerCase() == issuer.toLowerCase() &&
+            acc.accountName.toLowerCase() == accountName.toLowerCase(),
+      );
+
+      if (isDuplicate) {
+        emit(
+          DuplicateDetected(
+            qrUri: event.qrUri,
+            issuer: issuer,
+            accountName: accountName,
+            note: event.note,
+          ),
+        );
+        return;
+      }
+    }
+
     final user = SupabaseService.currentUser;
     if (user == null) return;
 
@@ -121,9 +156,11 @@ class AuthenticatorBloc extends Bloc<AuthenticatorEvent, AuthenticatorState> {
 
       final newAccount = AuthenticatorModel(
         userId: user.id,
-        issuer: parsed['issuer']!,
-        accountName: parsed['accountName']!,
+        issuer: issuer,
+        accountName: accountName,
         encryptedSecret: encryptedSecret,
+        note: event.note,
+        createdAt: DateTime.now(),
       );
 
       await _repository.createAuthenticator(newAccount);

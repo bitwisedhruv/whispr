@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:whispr/features/password_manager/data/password_model.dart';
 import 'package:whispr/features/password_manager/logic/encryption_service.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:whispr/features/authenticator/data/authenticator_model.dart';
 import '../data/audit_model.dart';
 
 class AuditEngine {
@@ -9,8 +10,8 @@ class AuditEngine {
 
   AuditReport performAudit({
     required List<PasswordModel> passwords,
+    required List<AuthenticatorModel> authenticators,
     required encrypt.Key sessionKey,
-    List<String> authenticatorIssuers = const [],
   }) {
     List<AuditFinding> findings = [];
     int totalPasswords = passwords.length;
@@ -18,8 +19,11 @@ class AuditEngine {
     int reusedCount = 0;
     int oldCount = 0;
     int missing2FACount = 0;
+    int duplicateTOTPCount = 0;
 
     Map<String, List<PasswordModel>> passwordGroups = {};
+
+    final authenticatorIssuers = authenticators.map((a) => a.issuer).toList();
 
     for (var pwd in passwords) {
       final decryptedPassword = _encryptionService.decryptText(
@@ -110,6 +114,33 @@ class AuditEngine {
       }
     });
 
+    // 5. Duplicate TOTP Check
+    Map<String, List<AuthenticatorModel>> totpGroups = {};
+    for (var auth in authenticators) {
+      final key =
+          '${auth.issuer.toLowerCase()}:${auth.accountName.toLowerCase()}';
+      totpGroups.putIfAbsent(key, () => []).add(auth);
+    }
+
+    totpGroups.forEach((key, list) {
+      if (list.length > 1) {
+        duplicateTOTPCount += (list.length - 1);
+        for (var item in list) {
+          findings.add(
+            AuditFinding(
+              title: 'Duplicate TOTP',
+              description:
+                  'Multiple authenticator entries found for "${item.issuer} (${item.accountName})". Only one is usually active.',
+              riskLevel: RiskLevel.medium,
+              accountId: item.id,
+              accountTitle: '${item.issuer} (${item.accountName})',
+              category: 'Authenticator',
+            ),
+          );
+        }
+      }
+    });
+
     // Calculate Overall Score (Simplified)
     int score = _calculateScore(
       total: totalPasswords,
@@ -117,6 +148,7 @@ class AuditEngine {
       reused: reusedCount,
       old: oldCount,
       missing2FA: missing2FACount,
+      duplicateTOTP: duplicateTOTPCount,
     );
 
     return AuditReport(
@@ -129,6 +161,7 @@ class AuditEngine {
         'reused': reusedCount,
         'old': oldCount,
         'missing2FA': missing2FACount,
+        'duplicateTOTP': duplicateTOTPCount,
       },
     );
   }
@@ -172,6 +205,7 @@ class AuditEngine {
     required int reused,
     required int old,
     required int missing2FA,
+    required int duplicateTOTP,
   }) {
     if (total == 0) return 100;
 
@@ -180,6 +214,7 @@ class AuditEngine {
     penalty += (reused / total) * 30;
     penalty += (old / total) * 10;
     penalty += (missing2FA / total) * 20;
+    penalty += (duplicateTOTP > 0 ? 5 : 0); // Small flat penalty for duplicates
 
     int score = 100 - penalty.round();
     return score.clamp(0, 100);

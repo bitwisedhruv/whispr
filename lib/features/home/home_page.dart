@@ -12,6 +12,8 @@ import 'package:whispr/features/authenticator/presentation/qr_scanner_screen.dar
 import 'package:whispr/features/password_manager/logic/vault_manager.dart';
 import 'package:whispr/features/password_manager/presentation/vault_unlock_screen.dart';
 import 'package:whispr/features/security_audit/presentation/security_audit_screen.dart';
+import 'package:whispr/features/authenticator/presentation/authenticator_cleanup_sheet.dart';
+import 'package:whispr/features/authenticator/data/authenticator_model.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -59,12 +61,21 @@ class HomePage extends StatelessWidget {
                     ).animate().fadeIn().slideX(begin: -0.1),
                     const SizedBox(height: 24),
 
+                    BlocListener<AuthenticatorBloc, AuthenticatorState>(
+                      listener: (context, state) {
+                        if (state is DuplicateDetected) {
+                          _showDuplicateWarning(context, state);
+                        }
+                      },
+                      child: Container(),
+                    ),
+
                     if (state is AuthenticatorLoading)
                       Center(
                         child: Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.03),
+                            color: Colors.white.withOpacity(0.03),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const SizedBox(
@@ -91,24 +102,7 @@ class HomePage extends StatelessWidget {
                                 style: TextStyle(color: Colors.white60),
                               ),
                             )
-                          : Column(
-                              children: state.accounts
-                                  .map(
-                                    (acc) => Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 16,
-                                      ),
-                                      child: _buildOTPCard(
-                                        context,
-                                        acc.issuer,
-                                        acc.accountName,
-                                        state.currentCodes[acc.id] ?? '000 000',
-                                        state.remainingSeconds,
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                            )
+                          : _buildAuthenticatorList(context, state)
                     else if (state is AuthenticatorError)
                       Center(
                         child: Column(
@@ -192,9 +186,12 @@ class HomePage extends StatelessWidget {
                   ),
                 );
                 if (result != null && context.mounted) {
-                  context.read<AuthenticatorBloc>().add(
-                    AddAuthenticator(result),
-                  );
+                  final note = await _showAddNoteDialog(context);
+                  if (context.mounted) {
+                    context.read<AuthenticatorBloc>().add(
+                      AddAuthenticator(result, note: note),
+                    );
+                  }
                 }
               },
               backgroundColor: Colors.white,
@@ -207,13 +204,55 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  Widget _buildAuthenticatorList(
+    BuildContext context,
+    AuthenticatorLoaded state,
+  ) {
+    // Group accounts by issuer + accountName
+    Map<String, List<AuthenticatorModel>> grouped = {};
+    for (var acc in state.accounts) {
+      final key =
+          '${acc.issuer.toLowerCase()}:${acc.accountName.toLowerCase()}';
+      grouped.putIfAbsent(key, () => []).add(acc);
+    }
+
+    return Column(
+      children: grouped.values.map((list) {
+        final primary = list.first;
+        final hasDuplicates = list.length > 1;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: _buildOTPCard(
+            context,
+            primary.issuer,
+            primary.accountName,
+            state.currentCodes[primary.id] ?? '000 000',
+            state.remainingSeconds,
+            isDuplicate: hasDuplicates,
+            onCleanup: hasDuplicates
+                ? () => _showCleanupSheet(
+                    context,
+                    list,
+                    state.currentCodes,
+                    state.remainingSeconds,
+                  )
+                : null,
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildOTPCard(
     BuildContext context,
     String title,
     String subtitle,
     String code,
-    int remainingSeconds,
-  ) {
+    int remainingSeconds, {
+    bool isDuplicate = false,
+    VoidCallback? onCleanup,
+  }) {
     String formattedCode = code;
     if (code.length == 6) {
       formattedCode = '${code.substring(0, 3)} ${code.substring(3)}';
@@ -222,54 +261,117 @@ class HomePage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(
+          color: isDuplicate
+              ? Colors.orangeAccent.withOpacity(0.2)
+              : Colors.white.withOpacity(0.05),
+        ),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                  ),
-                ),
-                Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          Row(
             children: [
-              Text(
-                formattedCode,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2,
-                  color: Colors.white,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                          ),
+                        ),
+                        if (isDuplicate)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Icon(
+                              Icons.warning_amber_rounded,
+                              size: 16,
+                              color: Colors.orangeAccent,
+                            ),
+                          ),
+                      ],
+                    ),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 4),
-              SizedBox(
-                width: 60,
-                child: LinearProgressIndicator(
-                  value: remainingSeconds / 30,
-                  backgroundColor: Colors.white12,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    remainingSeconds < 5 ? Colors.redAccent : Colors.white60,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    formattedCode,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2,
+                      color: Colors.white,
+                    ),
                   ),
-                  minHeight: 2,
-                ),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    width: 60,
+                    child: LinearProgressIndicator(
+                      value: remainingSeconds / 30,
+                      backgroundColor: Colors.white12,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        remainingSeconds < 5
+                            ? Colors.redAccent
+                            : Colors.white60,
+                      ),
+                      minHeight: 2,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
+          if (isDuplicate) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.orangeAccent.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      '⚠️ Multiple codes detected',
+                      style: TextStyle(
+                        color: Colors.orangeAccent,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: onCleanup,
+                    child: const Text(
+                      'Verify & clean up',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -280,9 +382,9 @@ class HomePage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Column(
         children: [
@@ -339,6 +441,95 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  void _showCleanupSheet(
+    BuildContext context,
+    List<AuthenticatorModel> list,
+    Map<String, String> currentCodes,
+    int remainingSeconds,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (c) => BlocProvider.value(
+        value: context.read<AuthenticatorBloc>(),
+        child: AuthenticatorCleanupSheet(
+          duplicates: list,
+          currentCodes: currentCodes,
+          remainingSeconds: remainingSeconds,
+        ),
+      ),
+    );
+  }
+
+  void _showDuplicateWarning(BuildContext context, DuplicateDetected state) {
+    showDialog(
+      context: context,
+      builder: (c) => AlertDialog(
+        backgroundColor: WhisprTheme.backgroundColor,
+        title: const Text('Duplicate Detected'),
+        content: Text(
+          'This account (${state.issuer}: ${state.accountName}) already has an authenticator entry. You may now have multiple codes. After confirming login works, consider removing the old one.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(c);
+              context.read<AuthenticatorBloc>().add(LoadAuthenticators());
+            },
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white38),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(c);
+              context.read<AuthenticatorBloc>().add(
+                AddAuthenticator(state.qrUri, force: true, note: state.note),
+              );
+            },
+            child: const Text(
+              'Add Anyway',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<String?> _showAddNoteDialog(BuildContext context) async {
+    String? note;
+    return await showDialog<String>(
+      context: context,
+      builder: (c) => AlertDialog(
+        backgroundColor: WhisprTheme.backgroundColor,
+        title: const Text('Add Note (Optional)'),
+        content: TextField(
+          autofocus: true,
+          onChanged: (v) => note = v,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: 'e.g., Re-added after reset',
+            hintStyle: TextStyle(color: Colors.white24),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text('Skip', style: TextStyle(color: Colors.white38)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, note),
+            child: const Text('Next', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildToolCard(
     BuildContext context,
     String title,
@@ -351,16 +542,16 @@ class HomePage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
+          color: Colors.white.withOpacity(0.03),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: Colors.white.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, size: 24, color: Colors.white),

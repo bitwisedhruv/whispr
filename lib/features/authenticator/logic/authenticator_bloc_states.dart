@@ -10,10 +10,12 @@ class LoadAuthenticators extends AuthenticatorEvent {}
 
 class AddAuthenticator extends AuthenticatorEvent {
   final String qrUri;
-  AddAuthenticator(this.qrUri);
+  final bool force;
+  final String? note;
+  AddAuthenticator(this.qrUri, {this.force = false, this.note});
 
   @override
-  List<Object?> get props => [qrUri];
+  List<Object?> get props => [qrUri, force, note];
 }
 
 class DeleteAuthenticator extends AuthenticatorEvent {
@@ -60,3 +62,20 @@ class AuthenticatorError extends AuthenticatorState {
 }
 
 class VaultLockedError extends AuthenticatorState {}
+
+class DuplicateDetected extends AuthenticatorState {
+  final String qrUri;
+  final String issuer;
+  final String accountName;
+  final String? note;
+
+  DuplicateDetected({
+    required this.qrUri,
+    required this.issuer,
+    required this.accountName,
+    this.note,
+  });
+
+  @override
+  List<Object?> get props => [qrUri, issuer, accountName, note];
+}

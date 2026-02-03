@@ -41,6 +41,7 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
             'reused': 0,
             'old': 0,
             'missing2FA': 0,
+            'duplicateTOTP': 0,
           },
         );
         emit(AuditCompleted(report: report, isVaultLocked: true));
@@ -49,12 +50,11 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
 
       // Full Analysis
       final authenticators = await _authenticatorRepository.getAuthenticators();
-      final issuers = authenticators.map((a) => a.issuer).toList();
 
       final report = _auditEngine.performAudit(
         passwords: passwords,
+        authenticators: authenticators,
         sessionKey: _vaultManager.sessionKey!,
-        authenticatorIssuers: issuers,
       );
 
       emit(const AuditLoading(message: 'Generating AI Coach insights...'));

@@ -38,6 +38,7 @@ Weak Passwords: ${report.stats['weak']}
 Reused Passwords: ${report.stats['reused']}
 Old Passwords: ${report.stats['old']}
 Missing 2FA: ${report.stats['missing2FA']}
+Duplicate TOTP Entries: ${report.stats['duplicateTOTP']}
 
 FINDINGS:
 ${findingsMetadata.map((f) => "- ${f['title']} (${f['risk_level']}) in ${f['category']} for account '${f['context']}'").join('\n')}
