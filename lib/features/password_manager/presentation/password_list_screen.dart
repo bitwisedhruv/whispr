@@ -7,6 +7,7 @@ import '../logic/password_event.dart';
 import '../logic/password_state.dart';
 import '../logic/vault_manager.dart';
 import 'package:flutter/services.dart';
+import 'package:whispr/core/widgets/action_bottom_sheet.dart';
 import 'add_password_screen.dart';
 import 'vault_setup_screen.dart';
 import 'vault_unlock_screen.dart';
@@ -170,70 +171,159 @@ class PasswordListBody extends StatelessWidget {
   ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: GlassContainer.frostedGlass(
-        height: 100,
-        width: MediaQuery.sizeOf(context).width - 48,
-        borderRadius: BorderRadius.circular(24),
-        borderWidth: 1,
-        borderColor: Colors.white.withValues(alpha: 0.1),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12),
+      child: GestureDetector(
+        onTap: () => _showActionSheet(context, password, state),
+        child: GlassContainer.frostedGlass(
+          height: 100,
+          width: MediaQuery.sizeOf(context).width - 48,
+          borderRadius: BorderRadius.circular(24),
+          borderWidth: 1,
+          borderColor: Colors.white.withValues(alpha: 0.1),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.language, color: Colors.white70),
                 ),
-                child: const Icon(Icons.language, color: Colors.white70),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      password.title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        password.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    Text(
-                      state.decrypt(password.usernameEncrypted),
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
+                      Text(
+                        state.decrypt(password.usernameEncrypted),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.copy, size: 20, color: Colors.white38),
-                onPressed: () {
-                  final passValue = state.decrypt(password.passwordEncrypted);
-                  Clipboard.setData(ClipboardData(text: passValue));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Password copied to clipboard'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                  // Auto-clear clipboard after 30 seconds
-                  Future.delayed(const Duration(seconds: 30), () {
-                    Clipboard.getData(Clipboard.kTextPlain).then((value) {
-                      if (value?.text == passValue) {
-                        Clipboard.setData(const ClipboardData(text: ''));
-                      }
-                    });
-                  });
-                },
-              ),
-              const Icon(Icons.chevron_right, size: 20, color: Colors.white24),
-            ],
+                IconButton(
+                  icon: const Icon(Icons.copy, size: 20, color: Colors.white38),
+                  onPressed: () => _copyPassword(context, password, state),
+                ),
+                const Icon(Icons.more_vert, size: 20, color: Colors.white24),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _copyPassword(
+    BuildContext context,
+    dynamic password,
+    PasswordLoaded state,
+  ) {
+    final passValue = state.decrypt(password.passwordEncrypted);
+    Clipboard.setData(ClipboardData(text: passValue));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Password copied to clipboard'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+    // Auto-clear clipboard after 30 seconds
+    Future.delayed(const Duration(seconds: 30), () {
+      Clipboard.getData(Clipboard.kTextPlain).then((value) {
+        if (value?.text == passValue) {
+          Clipboard.setData(const ClipboardData(text: ''));
+        }
+      });
+    });
+  }
+
+  void _showActionSheet(
+    BuildContext context,
+    dynamic password,
+    PasswordLoaded state,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) => ActionBottomSheet(
+        title: password.title,
+        subtitle: state.decrypt(password.usernameEncrypted),
+        actions: [
+          ActionItem(
+            label: 'Copy Password',
+            icon: Icons.copy,
+            onTap: () => _copyPassword(context, password, state),
+          ),
+          ActionItem(
+            label: 'Edit Password',
+            icon: Icons.edit_outlined,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (c) => BlocProvider.value(
+                    value: context.read<PasswordBloc>(),
+                    child: AddPasswordScreen(
+                      password: password,
+                      initialUsername: state.decrypt(
+                        password.usernameEncrypted,
+                      ),
+                      initialPasswordValue: state.decrypt(
+                        password.passwordEncrypted,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          ActionItem(
+            label: 'Delete Password',
+            icon: Icons.delete_outline,
+            color: Colors.redAccent,
+            onTap: () => _confirmDelete(context, password),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, dynamic password) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: WhisprTheme.backgroundColor,
+        title: const Text('Delete Password'),
+        content: Text('Are you sure you want to delete "${password.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<PasswordBloc>().add(DeletePassword(password.id));
+              Navigator.pop(dialogContext);
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Password Deleted')));
+            },
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.redAccent),
+            ),
+          ),
+        ],
       ),
     );
   }

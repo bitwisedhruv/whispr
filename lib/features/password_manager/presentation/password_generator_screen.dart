@@ -274,7 +274,7 @@ class _PasswordGeneratorScreenState extends State<PasswordGeneratorScreen> {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) =>
-                    AddPasswordScreen(initialPassword: _generatedPassword),
+                    AddPasswordScreen(initialPasswordValue: _generatedPassword),
               ),
             );
           },

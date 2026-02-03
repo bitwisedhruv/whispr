@@ -4,10 +4,18 @@ import 'package:whispr/core/theme.dart';
 import '../logic/password_bloc.dart';
 import '../logic/password_event.dart';
 import 'dart:math';
+import 'package:whispr/features/password_manager/data/password_model.dart';
 
 class AddPasswordScreen extends StatefulWidget {
-  final String? initialPassword;
-  const AddPasswordScreen({super.key, this.initialPassword});
+  final String? initialUsername;
+  final String? initialPasswordValue;
+  final PasswordModel? password;
+  const AddPasswordScreen({
+    super.key,
+    this.initialUsername,
+    this.initialPasswordValue,
+    this.password,
+  });
 
   @override
   State<AddPasswordScreen> createState() => _AddPasswordScreenState();
@@ -19,11 +27,23 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
   late final TextEditingController _passwordController;
   final _urlController = TextEditingController();
   final _notesController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void initState() {
     super.initState();
-    _passwordController = TextEditingController(text: widget.initialPassword);
+    if (widget.password != null) {
+      _titleController.text = widget.password!.title;
+      _urlController.text = widget.password!.websiteUrl ?? '';
+      _usernameController.text = widget.initialUsername ?? '';
+      _passwordController = TextEditingController(
+        text: widget.initialPasswordValue,
+      );
+    } else {
+      _passwordController = TextEditingController(
+        text: widget.initialPasswordValue,
+      );
+    }
   }
 
   void _generatePassword() {
@@ -49,15 +69,29 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       return;
     }
 
-    context.read<PasswordBloc>().add(
-      AddPassword(
-        title: _titleController.text,
-        username: _usernameController.text,
-        password: _passwordController.text,
-        websiteUrl: _urlController.text.isNotEmpty ? _urlController.text : null,
-        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
-      ),
-    );
+    if (widget.password != null) {
+      context.read<PasswordBloc>().add(
+        UpdatePassword(
+          password: widget.password!,
+          username: _usernameController.text,
+          passwordValue: _passwordController.text,
+        ),
+      );
+    } else {
+      context.read<PasswordBloc>().add(
+        AddPassword(
+          title: _titleController.text,
+          username: _usernameController.text,
+          password: _passwordController.text,
+          websiteUrl: _urlController.text.isNotEmpty
+              ? _urlController.text
+              : null,
+          notes: _notesController.text.isNotEmpty
+              ? _notesController.text
+              : null,
+        ),
+      );
+    }
 
     Navigator.of(context).pop();
   }
@@ -160,9 +194,20 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
         const SizedBox(height: 8),
         TextField(
           controller: _passwordController,
-          obscureText: false, // User might want to see what they generated
-          decoration: const InputDecoration(
-            prefixIcon: Icon(Icons.lock_outline, size: 20),
+          obscureText: _obscurePassword,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.lock_outline, size: 20),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                size: 20,
+                color: Colors.white38,
+              ),
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
+            ),
           ),
         ),
       ],
