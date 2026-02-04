@@ -95,4 +95,28 @@ class SupabaseService {
 
     return client.storage.from('avatars').getPublicUrl(filePath);
   }
+
+  // Delete Account
+  static Future<void> deleteUserAccount() async {
+    final user = currentUser;
+    if (user == null) throw Exception('No user logged in');
+
+    // 1. Delete the profile row (RLS should allow this)
+    await client.from('profiles').delete().eq('id', user.id);
+
+    // 2. Sign out the user
+    await signOut();
+
+    // NOTE: To fully delete the user from auth.users,
+    // you typically need a database trigger like:
+    // CREATE OR REPLACE FUNCTION delete_auth_user()
+    // RETURNS TRIGGER AS $$
+    // BEGIN
+    //   DELETE FROM auth.users WHERE id = OLD.id;
+    //   RETURN OLD;
+    // END;
+    // $$ LANGUAGE plpgsql SECURITY DEFINER;
+    // CREATE TRIGGER on_profile_deleted AFTER DELETE ON public.profiles
+    // FOR EACH ROW EXECUTE FUNCTION delete_auth_user();
+  }
 }

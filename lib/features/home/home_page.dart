@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:whispr/core/theme.dart';
-import 'package:whispr/services/supabase_service.dart';
-import 'package:whispr/features/auth/auth_page.dart';
 import 'package:whispr/features/password_manager/presentation/password_list_screen.dart';
 import 'package:whispr/features/password_manager/presentation/password_generator_screen.dart';
 import 'package:whispr/features/authenticator/logic/authenticator_bloc.dart';
@@ -14,6 +12,8 @@ import 'package:whispr/features/password_manager/presentation/vault_unlock_scree
 import 'package:whispr/features/security_audit/presentation/security_audit_screen.dart';
 import 'package:whispr/features/authenticator/presentation/authenticator_cleanup_sheet.dart';
 import 'package:whispr/features/authenticator/data/authenticator_model.dart';
+
+import 'package:whispr/features/profile/settings_screen.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -28,14 +28,13 @@ class HomePage extends StatelessWidget {
           title: const Text('Whispr'),
           actions: [
             IconButton(
-              icon: const Icon(Icons.logout, size: 20),
-              onPressed: () async {
-                await SupabaseService.signOut();
-                if (context.mounted) {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const AuthPage()),
-                  );
-                }
+              icon: const Icon(Icons.settings_outlined, size: 22),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const SettingsScreen(),
+                  ),
+                );
               },
             ),
             const SizedBox(width: 8),
