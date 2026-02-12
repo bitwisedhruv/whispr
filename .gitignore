@@ -45,3 +45,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Analysis output files
+analysis.json
+analysis.txt
+analysis_results.txt
+analyze_output.txt
+final_analysis.txt
+final_analysis_utf8.txt
+my_analysis.txt
+my_analysis_utf8.txt
