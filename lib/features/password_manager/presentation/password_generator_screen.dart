@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:glass_kit/glass_kit.dart';
 import 'package:whispr/core/theme.dart';
+import 'package:whispr/core/utils/snackbar_utils.dart';
 import 'add_password_screen.dart';
 
 class PasswordGeneratorScreen extends StatefulWidget {
@@ -248,7 +249,7 @@ class _PasswordGeneratorScreenState extends State<PasswordGeneratorScreen> {
               onChanged(v);
               _generate();
             },
-            activeColor: Colors.white,
+            activeThumbColor: Colors.white,
           ),
         ],
       ),
@@ -261,9 +262,7 @@ class _PasswordGeneratorScreenState extends State<PasswordGeneratorScreen> {
         ElevatedButton.icon(
           onPressed: () {
             Clipboard.setData(ClipboardData(text: _generatedPassword));
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Copied to clipboard')),
-            );
+            WhisprSnackBar.showSuccess(context, 'Copied to clipboard');
           },
           icon: const Icon(Icons.copy),
           label: const Text('Copy Password'),

@@ -42,7 +42,6 @@ dependencies:
   url_launcher: ^6.3.2
   glass_kit: ^4.0.2
   flutter_dotenv: ^6.0.0
-  flutter_svg: ^2.0.10+1
   image_picker: ^1.1.2
   encrypt: ^5.0.3
   flutter_secure_storage: ^9.2.2

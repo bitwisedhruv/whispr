@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:whispr/core/theme.dart';
 import 'package:whispr/services/supabase_service.dart';
 import 'dart:io';
+import 'package:whispr/core/utils/snackbar_utils.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -15,7 +15,7 @@ class ProfileEditScreen extends StatefulWidget {
 
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _fullNameController = TextEditingController();
-  String _selectedAvatar = 'assets/avatars/avatar_1.svg';
+  String _selectedAvatar = 'assets/avatars/avatar_1.jpg';
   String? _networkAvatarUrl;
   File? _pickedImage;
   bool _isLoading = false;
@@ -47,12 +47,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading profile: $e'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        WhisprSnackBar.showError(context, 'Error loading profile: $e');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -60,12 +55,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   final List<String> _avatars = [
-    'assets/avatars/avatar_1.svg',
-    'assets/avatars/avatar_2.svg',
-    'assets/avatars/avatar_3.svg',
-    'assets/avatars/avatar_4.svg',
-    'assets/avatars/avatar_5.svg',
-    'assets/avatars/avatar_6.svg',
+    'assets/avatars/avatar_1.jpg',
+    'assets/avatars/avatar_2.jpg',
+    'assets/avatars/avatar_3.jpg',
+    'assets/avatars/avatar_4.jpg',
+    'assets/avatars/avatar_5.jpg',
+    'assets/avatars/avatar_6.jpg',
   ];
 
   Future<void> _pickImage() async {
@@ -83,9 +78,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   Future<void> _saveProfile() async {
     if (_fullNameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your full name')),
-      );
+      WhisprSnackBar.showError(context, 'Please enter your full name');
       return;
     }
 
@@ -105,18 +98,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       );
       if (mounted) {
         Navigator.of(context).pop(true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully')),
-        );
+        WhisprSnackBar.showSuccess(context, 'Profile updated successfully');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        WhisprSnackBar.showError(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -157,18 +143,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.1),
+                                    color: Colors.white.withValues(alpha: 0.1),
                                     width: 4,
                                   ),
                                 ),
-                                child: Padding(
-                                  padding:
-                                      (_pickedImage == null &&
-                                          _networkAvatarUrl == null)
-                                      ? const EdgeInsets.all(20.0)
-                                      : EdgeInsets.zero,
-                                  child: _buildAvatarWidget(),
-                                ),
+                                child: _buildAvatarWidget(),
                               ),
                               Positioned(
                                 bottom: 0,
@@ -220,15 +199,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white.withOpacity(0.05),
+                                    color: Colors.white.withValues(alpha: 0.05),
                                     border: Border.all(
                                       color: isSelected
                                           ? Colors.white
-                                          : Colors.white.withOpacity(0.1),
+                                          : Colors.white.withValues(alpha: 0.1),
                                       width: 2,
                                     ),
                                   ),
-                                  child: SvgPicture.asset(avatar),
+                                  child: ClipOval(
+                                    child: Image.asset(
+                                      avatar,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
                                 ),
                               );
                             },
@@ -290,18 +274,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           fit: BoxFit.cover,
           width: 120,
           height: 120,
-          errorBuilder: (context, error, stackTrace) => SvgPicture.asset(
-            'assets/avatars/avatar_1.svg',
-            fit: BoxFit.contain,
-          ),
+          errorBuilder: (context, error, stackTrace) =>
+              Image.asset('assets/avatars/avatar_1.jpg', fit: BoxFit.cover),
         ),
       );
     } else {
-      return SvgPicture.asset(
+      return Image.asset(
         _selectedAvatar.isEmpty
-            ? 'assets/avatars/avatar_1.svg'
+            ? 'assets/avatars/avatar_1.jpg'
             : _selectedAvatar,
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
       );
     }
   }

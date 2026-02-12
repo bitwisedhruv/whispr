@@ -51,7 +51,7 @@ class EncryptionService {
       );
       return encrypter.decrypt(encrypt.Encrypted(ciphertext), iv: iv);
     } catch (e) {
-      print('EncryptionService: Decryption failed - $e');
+      // Decryption failed. This is handled by callers.
       throw Exception('Decryption failed: ${e.toString()}');
     }
   }

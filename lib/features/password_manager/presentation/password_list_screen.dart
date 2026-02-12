@@ -11,6 +11,7 @@ import 'package:whispr/core/widgets/action_bottom_sheet.dart';
 import 'add_password_screen.dart';
 import 'vault_setup_screen.dart';
 import 'vault_unlock_screen.dart';
+import 'package:whispr/core/utils/snackbar_utils.dart';
 
 class PasswordListScreen extends StatelessWidget {
   const PasswordListScreen({super.key});
@@ -232,12 +233,7 @@ class PasswordListBody extends StatelessWidget {
   ) {
     final passValue = state.decrypt(password.passwordEncrypted);
     Clipboard.setData(ClipboardData(text: passValue));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Password copied to clipboard'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    WhisprSnackBar.showSuccess(context, 'Password copied to clipboard');
     // Auto-clear clipboard after 30 seconds
     Future.delayed(const Duration(seconds: 30), () {
       Clipboard.getData(Clipboard.kTextPlain).then((value) {
@@ -314,9 +310,7 @@ class PasswordListBody extends StatelessWidget {
             onPressed: () {
               context.read<PasswordBloc>().add(DeletePassword(password.id));
               Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Password Deleted')));
+              WhisprSnackBar.showSuccess(context, 'Password Deleted');
             },
             child: const Text(
               'Delete',

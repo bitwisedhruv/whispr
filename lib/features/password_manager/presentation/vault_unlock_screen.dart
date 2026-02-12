@@ -135,7 +135,7 @@ class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
           TextButton(
             onPressed: () async {
               await VaultManager().resetVault();
-              if (mounted) {
+              if (context.mounted) {
                 Navigator.pop(context);
                 // Trigger a re-check or navigation to setup
                 Navigator.of(

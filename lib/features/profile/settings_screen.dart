@@ -4,6 +4,7 @@ import 'package:whispr/core/theme.dart';
 import 'package:whispr/services/supabase_service.dart';
 import 'package:whispr/features/auth/auth_page.dart';
 import 'package:whispr/features/profile/profile_edit_screen.dart';
+import 'package:whispr/core/utils/snackbar_utils.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -96,19 +97,16 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           (route) => false,
                         );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Account deleted successfully'),
-                          ),
+                        WhisprSnackBar.showSuccess(
+                          context,
+                          'Account deleted successfully',
                         );
                       }
                     } catch (e) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Error: ${e.toString()}'),
-                            backgroundColor: Colors.redAccent,
-                          ),
+                        WhisprSnackBar.showError(
+                          context,
+                          'Error: ${e.toString()}',
                         );
                       }
                     }
@@ -148,16 +146,16 @@ class SettingsScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.03),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: themeColor.withOpacity(0.05),
+                color: themeColor.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(icon, size: 24, color: themeColor),
@@ -178,7 +176,7 @@ class SettingsScreen extends StatelessWidget {
                   Text(
                     subtitle,
                     style: TextStyle(
-                      color: themeColor.withOpacity(0.5),
+                      color: themeColor.withValues(alpha: 0.5),
                       fontSize: 13,
                     ),
                   ),
@@ -188,7 +186,7 @@ class SettingsScreen extends StatelessWidget {
             Icon(
               Icons.chevron_right,
               size: 20,
-              color: themeColor.withOpacity(0.2),
+              color: themeColor.withValues(alpha: 0.2),
             ),
           ],
         ),

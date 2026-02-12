@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:whispr/core/theme.dart';
 import 'package:whispr/services/supabase_service.dart';
 import 'package:whispr/features/home/home_page.dart';
 import 'package:whispr/features/auth/auth_page.dart';
+import 'package:whispr/core/utils/snackbar_utils.dart';
 import 'dart:io';
 
 class ProfileSetupPage extends StatefulWidget {
@@ -17,7 +17,7 @@ class ProfileSetupPage extends StatefulWidget {
 
 class _ProfileSetupPageState extends State<ProfileSetupPage> {
   final _fullNameController = TextEditingController();
-  String _selectedAvatar = 'assets/avatars/avatar_1.svg';
+  String _selectedAvatar = 'assets/avatars/avatar_1.jpg';
   File? _pickedImage;
   bool _isLoading = false;
 
@@ -35,12 +35,12 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
   }
 
   final List<String> _avatars = [
-    'assets/avatars/avatar_1.svg',
-    'assets/avatars/avatar_2.svg',
-    'assets/avatars/avatar_3.svg',
-    'assets/avatars/avatar_4.svg',
-    'assets/avatars/avatar_5.svg',
-    'assets/avatars/avatar_6.svg',
+    'assets/avatars/avatar_1.jpg',
+    'assets/avatars/avatar_2.jpg',
+    'assets/avatars/avatar_3.jpg',
+    'assets/avatars/avatar_4.jpg',
+    'assets/avatars/avatar_5.jpg',
+    'assets/avatars/avatar_6.jpg',
   ];
 
   Future<void> _pickImage() async {
@@ -56,9 +56,7 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
 
   Future<void> _saveProfile() async {
     if (_fullNameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your full name')),
-      );
+      WhisprSnackBar.showError(context, 'Please enter your full name');
       return;
     }
 
@@ -81,12 +79,7 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        WhisprSnackBar.showError(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -131,24 +124,23 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                               width: 4,
                             ),
                           ),
-                          child: Padding(
-                            padding: _pickedImage == null
-                                ? const EdgeInsets.all(20.0)
-                                : EdgeInsets.zero,
-                            child: _pickedImage != null
-                                ? ClipOval(
-                                    child: Image.file(
-                                      _pickedImage!,
-                                      fit: BoxFit.cover,
-                                      width: 120,
-                                      height: 120,
-                                    ),
-                                  )
-                                : SvgPicture.asset(
-                                    _selectedAvatar,
-                                    fit: BoxFit.contain,
+                          child: _pickedImage != null
+                              ? ClipOval(
+                                  child: Image.file(
+                                    _pickedImage!,
+                                    fit: BoxFit.cover,
+                                    width: 120,
+                                    height: 120,
                                   ),
-                          ),
+                                )
+                              : ClipOval(
+                                  child: Image.asset(
+                                    _selectedAvatar,
+                                    fit: BoxFit.cover,
+                                    width: 120,
+                                    height: 120,
+                                  ),
+                                ),
                         ),
                         Positioned(
                           bottom: 0,
@@ -207,7 +199,9 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                                 width: 2,
                               ),
                             ),
-                            child: SvgPicture.asset(avatar),
+                            child: ClipOval(
+                              child: Image.asset(avatar, fit: BoxFit.cover),
+                            ),
                           ),
                         );
                       },

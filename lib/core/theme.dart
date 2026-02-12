@@ -105,5 +105,9 @@ class WhisprTheme {
       centerTitle: true,
       iconTheme: IconThemeData(color: Colors.white),
     ),
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+    ),
   );
 }

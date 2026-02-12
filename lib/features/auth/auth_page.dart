@@ -4,6 +4,7 @@ import 'package:whispr/core/theme.dart';
 import 'package:whispr/services/supabase_service.dart';
 import 'package:whispr/features/home/home_page.dart';
 import 'package:whispr/features/profile/profile_setup_page.dart';
+import 'package:whispr/core/utils/snackbar_utils.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -61,12 +62,7 @@ class _AuthPageState extends State<AuthPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        WhisprSnackBar.showError(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

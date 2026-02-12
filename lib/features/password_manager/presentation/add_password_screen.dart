@@ -5,6 +5,7 @@ import '../logic/password_bloc.dart';
 import '../logic/password_event.dart';
 import 'dart:math';
 import 'package:whispr/features/password_manager/data/password_model.dart';
+import 'package:whispr/core/utils/snackbar_utils.dart';
 
 class AddPasswordScreen extends StatefulWidget {
   final String? initialUsername;
@@ -61,10 +62,9 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
     if (_titleController.text.isEmpty ||
         _usernameController.text.isEmpty ||
         _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in title, username, and password'),
-        ),
+      WhisprSnackBar.showError(
+        context,
+        'Please fill in title, username, and password',
       );
       return;
     }

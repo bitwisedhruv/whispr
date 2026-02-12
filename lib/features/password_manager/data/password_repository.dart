@@ -31,8 +31,9 @@ class PasswordRepository {
   }
 
   Future<PasswordModel> updatePassword(PasswordModel password) async {
-    if (password.id == null)
+    if (password.id == null) {
       throw Exception('Password ID is required for update');
+    }
 
     final response = await _client
         .from('passwords')

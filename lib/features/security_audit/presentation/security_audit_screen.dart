@@ -140,10 +140,11 @@ class SecurityAuditScreen extends StatelessWidget {
 
   Widget _buildScoreCard(BuildContext context, int score, bool isLocked) {
     Color scoreColor = Colors.greenAccent;
-    if (score < 50)
+    if (score < 50) {
       scoreColor = Colors.redAccent;
-    else if (score < 80)
+    } else if (score < 80) {
       scoreColor = Colors.orangeAccent;
+    }
 
     return _buildGlassCard(
       context,
