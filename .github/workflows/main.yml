@@ -1,0 +1,71 @@
+name: Whispr CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0' # Or your project's version
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify Flutter formatting
+        run: flutter format --set-exit-if-changed .
+
+      - name: Analyze project source
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      # Setup Ruby for Fastlane
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: android
+
+      # Decode Keystore
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+
+      # Create key.properties
+      - name: Create key.properties
+        run: |
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=upload-keystore.jks" >> android/key.properties
+
+      # Create Play Store JSON Key
+      - name: Create Google Play Credentials
+        run: |
+          echo "${{ secrets.PLAY_STORE_JSON_KEY }}" > android/play-store-credentials.json
+
+      # Build and Deploy with Fastlane
+      - name: Build and Deploy using Fastlane
+        uses: maierj/fastlane-action@v3.1.0
+        with:
+          lane: "deploy_internal"
+          subdirectory: "android"
+        env:
+          JSON_KEY_FILE: "play-store-credentials.json"
+
+  # build_ios job would go here (requires macOS runner
