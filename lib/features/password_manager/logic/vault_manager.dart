@@ -23,44 +23,64 @@ class VaultManager {
 
   /// Checks if the vault has been set up (PIN exists).
   Future<bool> isVaultSetUp() async {
-    final pin = await _storage.read(key: _pinKey);
-    return pin != null;
+    try {
+      final pin = await _storage.read(key: _pinKey);
+      return pin != null;
+    } catch (e) {
+      // If we can't read the storage (e.g. decryption error), treat as not set up
+      // but log the error if possible.
+      return false;
+    }
   }
 
   /// Sets up the vault with a new PIN.
   Future<void> setupVault(String pin) async {
-    // Check if a salt already exists in Supabase
-    String? salt = await SupabaseService.getVaultSalt();
+    try {
+      // Check if a salt already exists in Supabase
+      String? salt = await SupabaseService.getVaultSalt();
 
-    if (salt == null) {
-      // New user or no salt synced yet
-      salt = DateTime.now().millisecondsSinceEpoch.toString();
-      await SupabaseService.updateProfile(vaultSalt: salt);
+      if (salt == null) {
+        // New user or no salt synced yet
+        salt = DateTime.now().millisecondsSinceEpoch.toString();
+        await SupabaseService.updateProfile(vaultSalt: salt);
+      }
+
+      await _storage.write(key: _pinKey, value: pin);
+      await _storage.write(key: _saltKey, value: salt);
+
+      // Auto-unlock after setup
+      _sessionKey = await _encryptionService.deriveKey(pin, salt);
+    } catch (e) {
+      // Handle potential storage write errors
+      throw Exception('Failed to setup vault: ${e.toString()}');
     }
-
-    await _storage.write(key: _pinKey, value: pin);
-    await _storage.write(key: _saltKey, value: salt);
-
-    // Auto-unlock after setup
-    _sessionKey = _encryptionService.deriveKey(pin, salt);
   }
 
   /// Unlocks the vault using the PIN.
   Future<bool> unlockWithPin(String pin) async {
-    final storedPin = await _storage.read(key: _pinKey);
-    String? salt = await _storage.read(key: _saltKey);
+    try {
+      final storedPin = await _storage.read(key: _pinKey);
+      String? salt = await _storage.read(key: _saltKey);
 
-    // If local salt is missing but user is logged in, try to fetch from Supabase
-    if (salt == null && SupabaseService.currentUser != null) {
-      salt = await SupabaseService.getVaultSalt();
-      if (salt != null) {
-        await _storage.write(key: _saltKey, value: salt);
+      // If local salt is missing but user is logged in, try to fetch from Supabase
+      if (salt == null && SupabaseService.currentUser != null) {
+        salt = await SupabaseService.getVaultSalt();
+        if (salt != null) {
+          await _storage.write(key: _saltKey, value: salt);
+        }
       }
-    }
 
-    if (storedPin == pin && salt != null) {
-      _sessionKey = _encryptionService.deriveKey(pin, salt);
-      return true;
+      if (storedPin == pin && salt != null) {
+        _sessionKey = await _encryptionService.deriveKey(pin, salt);
+        return true;
+      }
+    } catch (e) {
+      // Storage decryption error or other platform error
+      // Rethrow to be handled by the UI
+      throw Exception(
+        'Vault storage is unreadable. This can happen if the app\'s signature has changed. '
+        'Please try resetting the vault. Error: ${e.toString()}',
+      );
     }
     return false;
   }
@@ -97,12 +117,19 @@ class VaultManager {
         }
 
         if (pin != null && salt != null) {
-          _sessionKey = _encryptionService.deriveKey(pin, salt);
+          _sessionKey = await _encryptionService.deriveKey(pin, salt);
           return true;
         }
       }
     } catch (e) {
-      // Handle error
+      // Handle error (including storage decryption errors)
+      if (e.toString().contains('decryption') ||
+          e.toString().contains('KeyStore')) {
+        throw Exception(
+          'Biometric unlock failed due to secure storage error. '
+          'Please use your PIN or reset the vault.',
+        );
+      }
     }
     return false;
   }
@@ -115,11 +142,22 @@ class VaultManager {
   /// Reset the vault (deletes stored PIN and salt).
   /// WARNING: This will make all existing local encrypted data unrecoverable.
   Future<void> resetVault() async {
-    await _storage.delete(key: _pinKey);
-    await _storage.delete(key: _saltKey);
+    try {
+      await _storage.delete(key: _pinKey);
+      await _storage.delete(key: _saltKey);
+    } catch (e) {
+      // If delete fails (very rare), we might need to wipe all
+      await _storage.deleteAll();
+    }
     _sessionKey = null;
   }
 
   /// Helper to get user's SALT (for multi-device sync - in future)
-  Future<String?> getSalt() async => await _storage.read(key: _saltKey);
+  Future<String?> getSalt() async {
+    try {
+      return await _storage.read(key: _saltKey);
+    } catch (e) {
+      return null;
+    }
+  }
 }

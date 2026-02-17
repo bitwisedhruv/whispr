@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:whispr/core/theme.dart';
 import 'package:whispr/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:whispr/features/auth/auth_page.dart';
 import 'package:whispr/features/home/home_page.dart';
 import 'package:whispr/features/profile/profile_setup_page.dart';
@@ -15,25 +17,67 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   bool _isLoading = true;
+  String? _loadingMessage;
   Widget? _home;
+  late final StreamSubscription<AuthState> _authSubscription;
 
   @override
   void initState() {
     super.initState();
-    _checkAuth();
+    _listenToAuthChanges();
+    _checkInitialAuth();
   }
 
-  Future<void> _checkAuth() async {
-    final session = SupabaseService.client.auth.currentSession;
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
+  }
 
-    if (session == null) {
+  void _listenToAuthChanges() {
+    _authSubscription = SupabaseService.client.auth.onAuthStateChange.listen((
+      data,
+    ) {
+      final event = data.event;
+      final session = data.session;
+
+      if (event == AuthChangeEvent.signedIn ||
+          event == AuthChangeEvent.tokenRefreshed) {
+        _handleAuthSuccess(session);
+      } else if (event == AuthChangeEvent.signedOut) {
+        if (mounted) {
+          setState(() {
+            _home = const AuthPage();
+            _isLoading = false;
+            _loadingMessage = null;
+          });
+        }
+      }
+    });
+  }
+
+  Future<void> _checkInitialAuth() async {
+    final session = SupabaseService.client.auth.currentSession;
+    if (session != null) {
+      await _handleAuthSuccess(session);
+    } else {
       if (mounted) {
         setState(() {
           _home = const AuthPage();
           _isLoading = false;
         });
       }
-      return;
+    }
+  }
+
+  Future<void> _handleAuthSuccess(Session? session) async {
+    if (session == null) return;
+
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _loadingMessage = "Verifying your session...";
+      });
     }
 
     try {
@@ -47,14 +91,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
         setState(() {
           _home = hasProfile ? const HomePage() : const ProfileSetupPage();
           _isLoading = false;
+          _loadingMessage = null;
         });
       }
     } catch (e) {
-      // In case of error (e.g. network), fallback to AuthPage
       if (mounted) {
         setState(() {
           _home = const AuthPage();
           _isLoading = false;
+          _loadingMessage = null;
         });
       }
     }
@@ -107,6 +152,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
                       curve: Curves.easeInOut,
                     ),
                 const SizedBox(height: 24),
+                if (_loadingMessage != null) ...[
+                  Text(
+                    _loadingMessage!,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ).animate().fadeIn(),
+                  const SizedBox(height: 16),
+                ],
                 const SizedBox(
                   width: 100,
                   child: LinearProgressIndicator(

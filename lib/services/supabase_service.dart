@@ -20,8 +20,16 @@ class SupabaseService {
   }
 
   // Auth Methods
-  static Future<AuthResponse> signUp(String email, String password) async {
-    return await client.auth.signUp(email: email, password: password);
+  static Future<AuthResponse> signUp(
+    String email,
+    String password, {
+    String? emailRedirectTo,
+  }) async {
+    return await client.auth.signUp(
+      email: email,
+      password: password,
+      emailRedirectTo: emailRedirectTo,
+    );
   }
 
   static Future<AuthResponse> signIn(String email, String password) async {

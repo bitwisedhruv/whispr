@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:encrypt/encrypt.dart' as encrypt;
-import 'package:pointycastle/export.dart';
+import 'package:cryptography/cryptography.dart';
 
 class EncryptionService {
   static final EncryptionService _instance = EncryptionService._internal();
@@ -10,15 +10,23 @@ class EncryptionService {
 
   /// Derives a 32-byte key from a PIN and a salt using PBKDF2 with 100,000 iterations.
   /// This provides significant resistance against brute-force attacks.
-  encrypt.Key deriveKey(String pin, String salt) {
-    final saltBytes = Uint8List.fromList(utf8.encode(salt));
-    final pinBytes = Uint8List.fromList(utf8.encode(pin));
+  /// Uses the 'cryptography' package which leverages native platform APIs for performance.
+  Future<encrypt.Key> deriveKey(String pin, String salt) async {
+    final pbkdf2 = Pbkdf2(
+      macAlgorithm: Hmac.sha256(),
+      iterations: 100000,
+      bits: 256,
+    );
 
-    final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
-      ..init(Pbkdf2Parameters(saltBytes, 100000, 32));
+    // Pbkdf2 implementation in 'cryptography' is already optimized and
+    // often uses native platform APIs (via cryptography_flutter).
+    final secretKey = await pbkdf2.deriveKeyFromPassword(
+      password: pin,
+      nonce: utf8.encode(salt),
+    );
 
-    final keyBytes = derivator.process(pinBytes);
-    return encrypt.Key(keyBytes);
+    final keyBytes = await secretKey.extractBytes();
+    return encrypt.Key(Uint8List.fromList(keyBytes));
   }
 
   /// Encrypts plain text using the provided key.
@@ -32,9 +40,7 @@ class EncryptionService {
     final encrypted = encrypter.encrypt(plainText, iv: iv);
 
     // Combine IV and Ciphertext for storage
-    final combined = Uint8List(iv.bytes.length + encrypted.bytes.length);
-    combined.setAll(0, iv.bytes);
-    combined.setAll(iv.bytes.length, encrypted.bytes);
+    final combined = Uint8List.fromList([...iv.bytes, ...encrypted.bytes]);
 
     return base64.encode(combined);
   }

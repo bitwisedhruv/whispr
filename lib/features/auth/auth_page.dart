@@ -31,6 +31,7 @@ class _AuthPageState extends State<AuthPage> {
         await SupabaseService.signUp(
           _emailController.text,
           _passwordController.text,
+          emailRedirectTo: 'myapp://login',
         );
       }
 

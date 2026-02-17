@@ -39,47 +39,56 @@ class _VaultSetupScreenState extends State<VaultSetupScreen> {
           gradient: WhisprTheme.backgroundGradient,
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 60),
-                const Icon(
-                  Icons.lock_person_outlined,
-                  size: 48,
-                  color: Colors.white,
-                ).animate().fadeIn().scale(),
-                const SizedBox(height: 24),
-                Text(
-                  'Secure Your Vault',
-                  style: Theme.of(context).textTheme.displayMedium,
-                ).animate().fadeIn(delay: 100.ms),
-                const SizedBox(height: 12),
-                Text(
-                  'Set a Master PIN to encrypt your data. This PIN never leaves your device.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ).animate().fadeIn(delay: 200.ms),
-                const SizedBox(height: 48),
-                _buildPinField('Enter Master PIN', _pinController),
-                const SizedBox(height: 16),
-                _buildPinField('Confirm PIN', _confirmController),
-                if (_error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Text(
-                      _error!,
-                      style: const TextStyle(color: Colors.redAccent),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 60),
+                        const Icon(
+                          Icons.lock_person_outlined,
+                          size: 48,
+                          color: Colors.white,
+                        ).animate().fadeIn().scale(),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Secure Your Vault',
+                          style: Theme.of(context).textTheme.displayMedium,
+                        ).animate().fadeIn(delay: 100.ms),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Set a Master PIN to encrypt your data. This PIN never leaves your device.',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ).animate().fadeIn(delay: 200.ms),
+                        const SizedBox(height: 48),
+                        _buildPinField('Enter Master PIN', _pinController),
+                        const SizedBox(height: 16),
+                        _buildPinField('Confirm PIN', _confirmController),
+                        if (_error != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: Text(
+                              _error!,
+                              style: const TextStyle(color: Colors.redAccent),
+                            ),
+                          ),
+                        const SizedBox(height: 48),
+                        ElevatedButton(
+                          onPressed: _setupVault,
+                          child: const Text('Initialize Vault'),
+                        ).animate().fadeIn(delay: 500.ms),
+                        const SizedBox(height: 24),
+                      ],
                     ),
                   ),
-                const Spacer(),
-                ElevatedButton(
-                  onPressed: _setupVault,
-                  child: const Text('Initialize Vault'),
-                ).animate().fadeIn(delay: 500.ms),
-                const SizedBox(height: 24),
-              ],
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),

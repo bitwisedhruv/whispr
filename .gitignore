@@ -55,3 +55,10 @@ final_analysis.txt
 final_analysis_utf8.txt
 my_analysis.txt
 my_analysis_utf8.txt
+
+# Fastlane & CI/CD
+fastlane_setup.md
+android/key.properties
+android/upload-keystore.jks
+android/play-store-credentials.json
+*.jks

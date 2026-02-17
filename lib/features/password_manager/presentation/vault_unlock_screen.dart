@@ -20,27 +20,67 @@ class VaultUnlockScreen extends StatefulWidget {
 class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
   final TextEditingController _pinController = TextEditingController();
   bool _isError = false;
+  bool _isUnlocking = false;
 
   void _unlock() async {
-    final success = await VaultManager().unlockWithPin(_pinController.text);
-    if (success) {
-      widget.onUnlock(_pinController.text);
-    } else {
-      setState(() => _isError = true);
-      _pinController.clear();
-      Future.delayed(const Duration(seconds: 1), () {
-        if (mounted) setState(() => _isError = false);
-      });
+    if (_isUnlocking) return;
+
+    setState(() => _isUnlocking = true);
+    try {
+      final success = await VaultManager().unlockWithPin(_pinController.text);
+      if (mounted) setState(() => _isUnlocking = false);
+
+      if (success) {
+        widget.onUnlock(_pinController.text);
+      } else {
+        setState(() => _isError = true);
+        _pinController.clear();
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) setState(() => _isError = false);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isUnlocking = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.redAccent,
+            action: SnackBarAction(
+              label: 'Reset Vault',
+              textColor: Colors.white,
+              onPressed: _showResetConfirmation,
+            ),
+          ),
+        );
+      }
     }
   }
 
   void _unlockWithBiometrics() async {
-    final success = await VaultManager().unlockWithBiometrics();
-    if (success) {
-      if (widget.onBiometricUnlock != null) {
-        widget.onBiometricUnlock!();
-      } else {
-        widget.onUnlock(''); // Fallback
+    if (_isUnlocking) return;
+
+    try {
+      final success = await VaultManager().unlockWithBiometrics();
+      // biometric auth itself handles its UI, but our key derivation is also async now
+      if (success) {
+        if (mounted) setState(() => _isUnlocking = true);
+        // Even with biometrics, we need to derive the key from stored PIN
+        // VaultManager.unlockWithBiometrics already calls deriveKey internally.
+        if (widget.onBiometricUnlock != null) {
+          widget.onBiometricUnlock!();
+        } else {
+          widget.onUnlock(''); // Fallback
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
     }
   }
@@ -61,53 +101,99 @@ class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              return SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 24,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                              Icons.lock_outline,
-                              size: 64,
-                              color: Colors.white,
-                            )
-                            .animate(target: _isError ? 1 : 0)
-                            .shake(hz: 4, curve: Curves.easeInOut),
-                        const SizedBox(height: 32),
-                        Text(
-                          'Vault Locked',
-                          style: Theme.of(context).textTheme.displayMedium,
+              return Stack(
+                children: [
+                  SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 24,
                         ),
-                        const SizedBox(height: 48),
-                        _buildPinField(),
-                        const SizedBox(height: 24),
-                        TextButton.icon(
-                          onPressed: _unlockWithBiometrics,
-                          icon: const Icon(Icons.fingerprint),
-                          label: const Text('Unlock with Biometrics'),
-                        ),
-                        const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: _showResetConfirmation,
-                          child: const Text(
-                            'Forgot PIN? Reset Vault',
-                            style: TextStyle(
-                              color: Colors.white38,
-                              fontSize: 12,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 80),
+                            const Icon(
+                                  Icons.lock_outline,
+                                  size: 64,
+                                  color: Colors.white,
+                                )
+                                .animate(target: _isError ? 1 : 0)
+                                .shake(hz: 4, curve: Curves.easeInOut),
+                            const SizedBox(height: 24),
+                            Text(
+                              'Vault Locked',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.displayMedium,
                             ),
-                          ),
+                            const SizedBox(height: 60),
+                            _buildPinField(),
+                            const SizedBox(height: 32),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _isUnlocking ? null : _unlock,
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                ),
+                                child: _isUnlocking
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text('Unlock Vault'),
+                              ),
+                            ).animate().fadeIn(delay: 100.ms),
+                            const SizedBox(height: 16),
+                            TextButton.icon(
+                              onPressed: _isUnlocking
+                                  ? null
+                                  : _unlockWithBiometrics,
+                              icon: const Icon(Icons.fingerprint),
+                              label: const Text('Unlock with Biometrics'),
+                            ),
+                            const SizedBox(height: 32),
+                            TextButton(
+                              onPressed: _isUnlocking
+                                  ? null
+                                  : _showResetConfirmation,
+                              child: const Text(
+                                'Forgot PIN? Reset Vault',
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                  if (_isUnlocking)
+                    Container(
+                      color: Colors.black26,
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      ),
+                    ).animate().fadeIn(),
+                ],
               );
             },
           ),
@@ -161,13 +247,6 @@ class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
       maxLength: 6,
       textAlign: TextAlign.center,
       style: const TextStyle(fontSize: 32, letterSpacing: 16),
-      onChanged: (val) {
-        // Only auto-unlock if it's exactly 6 digits (or whatever length the user wants)
-        // Removing the hardcoded 4-digit auto-unlock to fix the user's issue.
-        if (val.length == 6) {
-          _unlock();
-        }
-      },
       onSubmitted: (_) => _unlock(),
       decoration: InputDecoration(
         hintText: 'PIN',
