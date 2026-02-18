@@ -23,7 +23,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0' # Or your project's version
+          flutter-version: '3.29.0' # Or your project's version
           channel: 'stable'
 
       - name: Install dependencies
