@@ -32,6 +32,9 @@ jobs:
       - name: Verify Flutter formatting
         run: dart format --set-exit-if-changed .
 
+      - name: Create dummy .env for analysis
+        run: touch .env
+
       - name: Analyze project source
         run: flutter analyze
 
