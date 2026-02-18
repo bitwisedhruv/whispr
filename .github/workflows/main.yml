@@ -74,6 +74,7 @@ jobs:
         with:
           lane: "deploy_internal"
           subdirectory: "android"
-        # No JSON_KEY_FILE needed as Fastlane will use the auth context from the step above
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: '${{ steps.auth.outputs.credentials_file_path }}'
 
   # build_ios job would go here (requires macOS runner)
