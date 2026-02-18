@@ -30,7 +30,7 @@ platform :android do
     upload_to_play_store(
       track: 'internal',
       aab: '../build/app/outputs/bundle/release/app-release.aab',
-      # json_key: 'android/play-store-credentials.json', # Use ENV var in CI
+      json_key: ENV['GOOGLE_APPLICATION_CREDENTIALS'],
       skip_upload_apk: true,
       skip_upload_metadata: true,
       skip_upload_images: true,
