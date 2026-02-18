@@ -21,13 +21,13 @@ class AuditFinding extends Equatable {
 
   @override
   List<Object?> get props => [
-    title,
-    description,
-    riskLevel,
-    accountId,
-    accountTitle,
-    category,
-  ];
+        title,
+        description,
+        riskLevel,
+        accountId,
+        accountTitle,
+        category,
+      ];
 }
 
 class AuditReport extends Equatable {
@@ -47,10 +47,10 @@ class AuditReport extends Equatable {
 
   @override
   List<Object?> get props => [
-    overallScore,
-    findings,
-    aiInterpretation,
-    auditDate,
-    stats,
-  ];
+        overallScore,
+        findings,
+        aiInterpretation,
+        auditDate,
+        stats,
+      ];
 }

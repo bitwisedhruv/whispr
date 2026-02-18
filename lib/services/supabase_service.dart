@@ -50,11 +50,8 @@ class SupabaseService {
     final user = currentUser;
     if (user == null) return null;
 
-    final response = await client
-        .from('profiles')
-        .select()
-        .eq('id', user.id)
-        .maybeSingle();
+    final response =
+        await client.from('profiles').select().eq('id', user.id).maybeSingle();
 
     return response;
   }
@@ -93,9 +90,7 @@ class SupabaseService {
         '${user.id}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
     final filePath = fileName;
 
-    await client.storage
-        .from('avatars')
-        .upload(
+    await client.storage.from('avatars').upload(
           filePath,
           file,
           fileOptions: const FileOptions(cacheControl: '3600', upsert: false),

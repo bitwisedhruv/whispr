@@ -13,8 +13,8 @@ class PasswordBloc extends Bloc<PasswordEvent, PasswordState> {
   final EncryptionService _encryptionService = EncryptionService();
 
   PasswordBloc({PasswordRepository? repository})
-    : _repository = repository ?? PasswordRepository(),
-      super(PasswordInitial()) {
+      : _repository = repository ?? PasswordRepository(),
+        super(PasswordInitial()) {
     on<LoadPasswords>(_onLoadPasswords);
     on<AddPassword>(_onAddPassword);
     on<UpdatePassword>(_onUpdatePassword);

@@ -71,26 +71,25 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
 
     if (widget.password != null) {
       context.read<PasswordBloc>().add(
-        UpdatePassword(
-          password: widget.password!,
-          username: _usernameController.text,
-          passwordValue: _passwordController.text,
-        ),
-      );
+            UpdatePassword(
+              password: widget.password!,
+              username: _usernameController.text,
+              passwordValue: _passwordController.text,
+            ),
+          );
     } else {
       context.read<PasswordBloc>().add(
-        AddPassword(
-          title: _titleController.text,
-          username: _usernameController.text,
-          password: _passwordController.text,
-          websiteUrl: _urlController.text.isNotEmpty
-              ? _urlController.text
-              : null,
-          notes: _notesController.text.isNotEmpty
-              ? _notesController.text
-              : null,
-        ),
-      );
+            AddPassword(
+              title: _titleController.text,
+              username: _usernameController.text,
+              password: _passwordController.text,
+              websiteUrl:
+                  _urlController.text.isNotEmpty ? _urlController.text : null,
+              notes: _notesController.text.isNotEmpty
+                  ? _notesController.text
+                  : null,
+            ),
+          );
     }
 
     Navigator.of(context).pop();

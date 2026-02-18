@@ -48,8 +48,7 @@ class _AuthPageState extends State<AuthPage> {
 
       // Check for profile completeness
       final profile = await SupabaseService.getProfile();
-      final hasProfile =
-          profile != null &&
+      final hasProfile = profile != null &&
           profile['full_name'] != null &&
           (profile['full_name'] as String).isNotEmpty;
 
@@ -111,16 +110,16 @@ class _AuthPageState extends State<AuthPage> {
                                     color: Colors.white,
                                   ),
                                 ).animate().scale(
-                                  duration: 600.ms,
-                                  curve: Curves.easeOutBack,
-                                ),
+                                      duration: 600.ms,
+                                      curve: Curves.easeOutBack,
+                                    ),
                                 const SizedBox(height: 24),
                                 Text(
-                                      'Whispr',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.displayLarge,
-                                    )
+                                  'Whispr',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.displayLarge,
+                                )
                                     .animate()
                                     .fadeIn(delay: 200.ms)
                                     .slideY(begin: 0.2),
@@ -156,18 +155,18 @@ class _AuthPageState extends State<AuthPage> {
                           ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.1),
                           const SizedBox(height: 32),
                           ElevatedButton(
-                                onPressed: _isLoading ? null : _handleAuth,
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: WhisprTheme.backgroundColor,
-                                        ),
-                                      )
-                                    : Text(_isLogin ? 'Log In' : 'Sign Up'),
-                              )
+                            onPressed: _isLoading ? null : _handleAuth,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: WhisprTheme.backgroundColor,
+                                    ),
+                                  )
+                                : Text(_isLogin ? 'Log In' : 'Sign Up'),
+                          )
                               .animate()
                               .fadeIn(delay: 900.ms)
                               .scale(begin: const Offset(0.9, 0.9)),

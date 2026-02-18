@@ -205,8 +205,8 @@ class AuthenticatorCleanupSheet extends StatelessWidget {
           TextButton(
             onPressed: () {
               context.read<AuthenticatorBloc>().add(
-                DeleteAuthenticator(acc.id!),
-              );
+                    DeleteAuthenticator(acc.id!),
+                  );
               Navigator.pop(c); // Close dialog
               Navigator.pop(context); // Close sheet
             },

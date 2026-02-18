@@ -217,18 +217,18 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                   ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.1),
                   const SizedBox(height: 48),
                   ElevatedButton(
-                        onPressed: _isLoading ? null : _saveProfile,
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: WhisprTheme.backgroundColor,
-                                ),
-                              )
-                            : const Text('Complete Setup'),
-                      )
+                    onPressed: _isLoading ? null : _saveProfile,
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: WhisprTheme.backgroundColor,
+                            ),
+                          )
+                        : const Text('Complete Setup'),
+                  )
                       .animate()
                       .fadeIn(delay: 900.ms)
                       .scale(begin: const Offset(0.9, 0.9)),

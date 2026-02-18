@@ -95,7 +95,6 @@ class SecurityAuditScreen extends StatelessWidget {
           const SizedBox(height: kToolbarHeight + 40),
           _buildScoreCard(context, report.overallScore, state.isVaultLocked),
           const SizedBox(height: 32),
-
           if (state.isVaultLocked)
             _buildLockedWarning(context)
           else ...[
@@ -109,7 +108,6 @@ class SecurityAuditScreen extends StatelessWidget {
               report.aiInterpretation ?? "Analysis in progress...",
             ),
             const SizedBox(height: 32),
-
             Text(
               'Detailed Findings',
               style: Theme.of(context).textTheme.headlineMedium,

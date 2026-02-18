@@ -119,10 +119,10 @@ class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
                           children: [
                             const SizedBox(height: 80),
                             const Icon(
-                                  Icons.lock_outline,
-                                  size: 64,
-                                  color: Colors.white,
-                                )
+                              Icons.lock_outline,
+                              size: 64,
+                              color: Colors.white,
+                            )
                                 .animate(target: _isError ? 1 : 0)
                                 .shake(hz: 4, curve: Curves.easeInOut),
                             const SizedBox(height: 24),
@@ -157,17 +157,15 @@ class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
                             ).animate().fadeIn(delay: 100.ms),
                             const SizedBox(height: 16),
                             TextButton.icon(
-                              onPressed: _isUnlocking
-                                  ? null
-                                  : _unlockWithBiometrics,
+                              onPressed:
+                                  _isUnlocking ? null : _unlockWithBiometrics,
                               icon: const Icon(Icons.fingerprint),
                               label: const Text('Unlock with Biometrics'),
                             ),
                             const SizedBox(height: 32),
                             TextButton(
-                              onPressed: _isUnlocking
-                                  ? null
-                                  : _showResetConfirmation,
+                              onPressed:
+                                  _isUnlocking ? null : _showResetConfirmation,
                               child: const Text(
                                 'Forgot PIN? Reset Vault',
                                 style: TextStyle(

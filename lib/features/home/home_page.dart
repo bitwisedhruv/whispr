@@ -59,7 +59,6 @@ class HomePage extends StatelessWidget {
                       style: Theme.of(context).textTheme.displayMedium,
                     ).animate().fadeIn().slideX(begin: -0.1),
                     const SizedBox(height: 24),
-
                     BlocListener<AuthenticatorBloc, AuthenticatorState>(
                       listener: (context, state) {
                         if (state is DuplicateDetected) {
@@ -68,7 +67,6 @@ class HomePage extends StatelessWidget {
                       },
                       child: Container(),
                     ),
-
                     if (state is AuthenticatorLoading)
                       Center(
                         child: Container(
@@ -119,7 +117,6 @@ class HomePage extends StatelessWidget {
                           ],
                         ),
                       ),
-
                     const SizedBox(height: 48),
                     Text(
                       'Quick Tools',
@@ -188,8 +185,8 @@ class HomePage extends StatelessWidget {
                   final note = await _showAddNoteDialog(context);
                   if (context.mounted) {
                     context.read<AuthenticatorBloc>().add(
-                      AddAuthenticator(result, note: note),
-                    );
+                          AddAuthenticator(result, note: note),
+                        );
                   }
                 }
               },
@@ -231,11 +228,11 @@ class HomePage extends StatelessWidget {
             isDuplicate: hasDuplicates,
             onCleanup: hasDuplicates
                 ? () => _showCleanupSheet(
-                    context,
-                    list,
-                    state.currentCodes,
-                    state.remainingSeconds,
-                  )
+                      context,
+                      list,
+                      state.currentCodes,
+                      state.remainingSeconds,
+                    )
                 : null,
           ),
         );
@@ -486,8 +483,9 @@ class HomePage extends StatelessWidget {
             onPressed: () {
               Navigator.pop(c);
               context.read<AuthenticatorBloc>().add(
-                AddAuthenticator(state.qrUri, force: true, note: state.note),
-              );
+                    AddAuthenticator(state.qrUri,
+                        force: true, note: state.note),
+                  );
             },
             child: const Text(
               'Add Anyway',

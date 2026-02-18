@@ -29,13 +29,13 @@ class AddPassword extends PasswordEvent {
 
   @override
   List<Object?> get props => [
-    title,
-    username,
-    password,
-    websiteUrl,
-    notes,
-    category,
-  ];
+        title,
+        username,
+        password,
+        websiteUrl,
+        notes,
+        category,
+      ];
 }
 
 class UpdatePassword extends PasswordEvent {

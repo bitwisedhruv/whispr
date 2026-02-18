@@ -18,8 +18,8 @@ class AuthenticatorBloc extends Bloc<AuthenticatorEvent, AuthenticatorState> {
   Timer? _refreshTimer;
 
   AuthenticatorBloc({AuthenticatorRepository? repository})
-    : _repository = repository ?? AuthenticatorRepository(),
-      super(AuthenticatorInitial()) {
+      : _repository = repository ?? AuthenticatorRepository(),
+        super(AuthenticatorInitial()) {
     on<LoadAuthenticators>(_onLoadAuthenticators);
     on<AddAuthenticator>(_onAddAuthenticator);
     on<DeleteAuthenticator>(_onDeleteAuthenticator);

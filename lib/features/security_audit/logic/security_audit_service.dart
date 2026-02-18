@@ -27,8 +27,7 @@ class SecurityAuditService {
         )
         .toList();
 
-    final prompt =
-        '''
+    final prompt = '''
 You are a Security Coach. Analyze the following password vault audit results and provide a brief, actionable, and encouraging interpretation.
 Explain why these risks matter in simple language and prioritize what the user should fix first.
 

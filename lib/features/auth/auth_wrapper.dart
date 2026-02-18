@@ -82,8 +82,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     try {
       final profile = await SupabaseService.getProfile();
-      final hasProfile =
-          profile != null &&
+      final hasProfile = profile != null &&
           profile['full_name'] != null &&
           (profile['full_name'] as String).isNotEmpty;
 
@@ -118,21 +117,21 @@ class _AuthWrapperState extends State<AuthWrapper> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.shield_outlined,
-                        size: 40,
-                        color: Colors.white,
-                      ),
-                    )
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.shield_outlined,
+                    size: 40,
+                    color: Colors.white,
+                  ),
+                )
                     .animate(onPlay: (controller) => controller.repeat())
                     .shimmer(
                       duration: 1500.ms,

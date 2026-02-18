@@ -229,21 +229,21 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
                         const SizedBox(height: 48),
                         ElevatedButton(
-                              onPressed: _isSaving ? null : _saveProfile,
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: const Size(double.infinity, 56),
-                              ),
-                              child: _isSaving
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: WhisprTheme.backgroundColor,
-                                      ),
-                                    )
-                                  : const Text('Save Changes'),
-                            )
+                          onPressed: _isSaving ? null : _saveProfile,
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 56),
+                          ),
+                          child: _isSaving
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: WhisprTheme.backgroundColor,
+                                  ),
+                                )
+                              : const Text('Save Changes'),
+                        )
                             .animate()
                             .fadeIn(delay: 500.ms)
                             .scale(begin: const Offset(0.9, 0.9)),
