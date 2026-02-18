@@ -70,10 +70,8 @@ jobs:
 
       # Build and Deploy with Fastlane
       - name: Build and Deploy using Fastlane
-        uses: maierj/fastlane-action@v3.1.0
-        with:
-          lane: "deploy_internal"
-          subdirectory: "android"
+        run: bundle exec fastlane deploy_internal
+        working-directory: android
         env:
           GOOGLE_APPLICATION_CREDENTIALS: '${{ steps.auth.outputs.credentials_file_path }}'
 
