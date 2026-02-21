@@ -62,7 +62,7 @@ class _AuthPageState extends State<AuthPage> {
       }
     } catch (e) {
       if (mounted) {
-        WhisprSnackBar.showError(context, e.toString());
+        WhisprSnackBar.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

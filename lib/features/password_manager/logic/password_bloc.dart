@@ -125,23 +125,37 @@ class PasswordBloc extends Bloc<PasswordEvent, PasswordState> {
     try {
       var updatedPassword = event.password;
 
-      if (event.username != null) {
-        updatedPassword = updatedPassword.copyWith(
-          usernameEncrypted: _encryptionService.encryptText(
-            event.username!,
-            key,
-          ),
-        );
-      }
+      updatedPassword = updatedPassword.copyWith(
+        title: event.title,
+        websiteUrl: event.websiteUrl,
+      );
 
-      if (event.passwordValue != null) {
-        updatedPassword = updatedPassword.copyWith(
-          passwordEncrypted: _encryptionService.encryptText(
-            event.passwordValue!,
-            key,
-          ),
-        );
+      // Handle nullability for notes - if event.notes is empty/null, we pass null to clear it
+      // if it has content, we encrypt it.
+      String? encryptedNotes;
+      if (event.notes != null && event.notes!.isNotEmpty) {
+        encryptedNotes = _encryptionService.encryptText(event.notes!, key);
       }
+      // Since copyWith doesn't handle setting to null natively without a custom implementation,
+      // we'll explicitly use the constructor if we need to set a non-null to null.
+      // But actually, our copyWith does have optional parameters.
+      // Let's just create a new one using the old one's data to ensure we can clear notes and other fields if needed.
+      updatedPassword = PasswordModel(
+        id: updatedPassword.id,
+        userId: updatedPassword.userId,
+        title: event.title,
+        category: updatedPassword.category,
+        createdAt: updatedPassword.createdAt,
+        updatedAt: DateTime.now(), // update the updated_at timestamp
+        websiteUrl: event.websiteUrl,
+        usernameEncrypted: event.username != null
+            ? _encryptionService.encryptText(event.username!, key)
+            : updatedPassword.usernameEncrypted,
+        passwordEncrypted: event.passwordValue != null
+            ? _encryptionService.encryptText(event.passwordValue!, key)
+            : updatedPassword.passwordEncrypted,
+        notesEncrypted: encryptedNotes,
+      );
 
       await _repository.updatePassword(updatedPassword);
       add(LoadPasswords());

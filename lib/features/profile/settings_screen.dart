@@ -106,7 +106,7 @@ class SettingsScreen extends StatelessWidget {
                       if (context.mounted) {
                         WhisprSnackBar.showError(
                           context,
-                          'Error: ${e.toString()}',
+                          e,
                         );
                       }
                     }

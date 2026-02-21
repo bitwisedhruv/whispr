@@ -250,6 +250,9 @@ class _PasswordGeneratorScreenState extends State<PasswordGeneratorScreen> {
               _generate();
             },
             activeThumbColor: Colors.white,
+            activeTrackColor: Colors.greenAccent.withValues(alpha: 0.5),
+            inactiveThumbColor: Colors.white54,
+            inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
           ),
         ],
       ),

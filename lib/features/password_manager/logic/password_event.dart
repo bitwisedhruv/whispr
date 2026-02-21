@@ -40,17 +40,30 @@ class AddPassword extends PasswordEvent {
 
 class UpdatePassword extends PasswordEvent {
   final PasswordModel password;
+  final String title;
   final String? username;
   final String? passwordValue;
+  final String? websiteUrl;
+  final String? notes;
 
   const UpdatePassword({
     required this.password,
+    required this.title,
     this.username,
     this.passwordValue,
+    this.websiteUrl,
+    this.notes,
   });
 
   @override
-  List<Object?> get props => [password, username, passwordValue];
+  List<Object?> get props => [
+        password,
+        title,
+        username,
+        passwordValue,
+        websiteUrl,
+        notes,
+      ];
 }
 
 class DeletePassword extends PasswordEvent {

@@ -17,7 +17,7 @@ default_platform(:android)
 
 platform :android do
   desc "Run tests, build, and deploy to internal track"
-  lane :deploy_internal do
+  lane :deploy_alpha do
     # Run Flutter tests
     Dir.chdir("../..") do
       sh "flutter test"
@@ -26,9 +26,9 @@ platform :android do
     # Build App Bundle
     gradle(task: "bundle", build_type: "Release")
 
-    # Upload to Play Store Internal Track
+    # Upload to Play Store Closed Testing Track (Alpha)
     upload_to_play_store(
-      track: 'internal',
+      track: 'alpha',
       aab: '../build/app/outputs/bundle/release/app-release.aab',
       json_key: ENV['GOOGLE_APPLICATION_CREDENTIALS'],
       skip_upload_apk: true,

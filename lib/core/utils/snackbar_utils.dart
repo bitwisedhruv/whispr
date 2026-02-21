@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:whispr/core/theme.dart';
 
 class WhisprSnackBar {
@@ -12,7 +13,22 @@ class WhisprSnackBar {
     );
   }
 
-  static void showError(BuildContext context, String message) {
+  static void showError(BuildContext context, dynamic error) {
+    String message;
+
+    if (error is AuthException) {
+      message = error.message;
+    } else if (error is PostgrestException) {
+      message = error.message;
+    } else if (error is StorageException) {
+      message = error.message;
+    } else if (error is Exception) {
+      // Clean up generic "Exception: ..." prefix if present
+      message = error.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
+    } else {
+      message = error.toString();
+    }
+
     _show(
       context,
       message,

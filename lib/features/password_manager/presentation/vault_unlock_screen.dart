@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:whispr/core/theme.dart';
+import 'package:whispr/core/utils/snackbar_utils.dart';
 import '../logic/vault_manager.dart';
 
 class VaultUnlockScreen extends StatefulWidget {
@@ -42,17 +43,7 @@ class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isUnlocking = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.redAccent,
-            action: SnackBarAction(
-              label: 'Reset Vault',
-              textColor: Colors.white,
-              onPressed: _showResetConfirmation,
-            ),
-          ),
-        );
+        WhisprSnackBar.showError(context, e);
       }
     }
   }
@@ -75,12 +66,7 @@ class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        WhisprSnackBar.showError(context, e);
       }
     }
   }

@@ -86,9 +86,9 @@ class PasswordListBody extends StatelessWidget {
               child: state.passwords.isEmpty
                   ? _buildEmptyState(context)
                   : ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(
+                      padding: EdgeInsets.fromLTRB(
                         24,
-                        kToolbarHeight + 40,
+                        MediaQuery.paddingOf(context).top + kToolbarHeight + 24,
                         24,
                         100,
                       ),
@@ -179,7 +179,9 @@ class PasswordListBody extends StatelessWidget {
           width: MediaQuery.sizeOf(context).width - 48,
           borderRadius: BorderRadius.circular(24),
           borderWidth: 1,
-          borderColor: Colors.white.withValues(alpha: 0.1),
+          borderColor: Colors.white.withValues(alpha: 0.15),
+          color: WhisprTheme.surfaceColor
+              .withValues(alpha: 0.4), // Theme-based tint
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -277,6 +279,9 @@ class PasswordListBody extends StatelessWidget {
                       initialPasswordValue: state.decrypt(
                         password.passwordEncrypted,
                       ),
+                      initialNotesValue: password.notesEncrypted != null
+                          ? state.decrypt(password.notesEncrypted!)
+                          : null,
                     ),
                   ),
                 ),

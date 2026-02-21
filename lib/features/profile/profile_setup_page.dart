@@ -79,7 +79,7 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
       }
     } catch (e) {
       if (mounted) {
-        WhisprSnackBar.showError(context, e.toString());
+        WhisprSnackBar.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

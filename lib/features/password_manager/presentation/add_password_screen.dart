@@ -10,11 +10,13 @@ import 'package:whispr/core/utils/snackbar_utils.dart';
 class AddPasswordScreen extends StatefulWidget {
   final String? initialUsername;
   final String? initialPasswordValue;
+  final String? initialNotesValue;
   final PasswordModel? password;
   const AddPasswordScreen({
     super.key,
     this.initialUsername,
     this.initialPasswordValue,
+    this.initialNotesValue,
     this.password,
   });
 
@@ -40,6 +42,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       _passwordController = TextEditingController(
         text: widget.initialPasswordValue,
       );
+      _notesController.text = widget.initialNotesValue ?? '';
     } else {
       _passwordController = TextEditingController(
         text: widget.initialPasswordValue,
@@ -73,8 +76,14 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       context.read<PasswordBloc>().add(
             UpdatePassword(
               password: widget.password!,
+              title: _titleController.text,
               username: _usernameController.text,
               passwordValue: _passwordController.text,
+              websiteUrl:
+                  _urlController.text.isNotEmpty ? _urlController.text : null,
+              notes: _notesController.text.isNotEmpty
+                  ? _notesController.text
+                  : null,
             ),
           );
     } else {
@@ -119,7 +128,12 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
           gradient: WhisprTheme.backgroundGradient,
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, kToolbarHeight + 40, 24, 40),
+          padding: EdgeInsets.fromLTRB(
+            24,
+            MediaQuery.paddingOf(context).top + kToolbarHeight + 24,
+            24,
+            40,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
