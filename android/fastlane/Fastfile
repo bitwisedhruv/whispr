@@ -23,8 +23,8 @@ platform :android do
       sh "flutter test"
     end
 
-    # Build App Bundle
-    gradle(task: "bundle", build_type: "Release")
+    # Build App Bundle using Flutter to ensure versions from pubspec.yaml are injected
+    sh "flutter build appbundle --release"
 
     # Upload to Play Store Closed Testing Track (Alpha)
     upload_to_play_store(
