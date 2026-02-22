@@ -29,6 +29,7 @@ void main() {
 
       // Warn about webhook secret formatting rather than failing strictly, because testing env might flex
       if (anonKey.startsWith('sb_secret_')) {
+        // ignore: avoid_print
         print(
             'WARNING: The ANON_KEY matches a webhook secret format, not a standard JWT anon key.');
       }
