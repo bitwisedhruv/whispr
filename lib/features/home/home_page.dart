@@ -12,6 +12,7 @@ import 'package:whispr/features/password_manager/presentation/vault_unlock_scree
 import 'package:whispr/features/security_audit/presentation/security_audit_screen.dart';
 import 'package:whispr/features/authenticator/presentation/authenticator_cleanup_sheet.dart';
 import 'package:whispr/features/authenticator/data/authenticator_model.dart';
+import 'package:whispr/features/domain_reliability/presentation/domain_check_screen.dart';
 
 import 'package:whispr/features/profile/settings_screen.dart';
 
@@ -165,6 +166,20 @@ class HomePage extends StatelessWidget {
                         );
                       },
                     ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1),
+                    const SizedBox(height: 16),
+                    _buildToolCard(
+                      context,
+                      'Domain Reliability',
+                      'Check links for scams and phishing',
+                      Icons.shield_outlined,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const DomainCheckScreen(),
+                          ),
+                        );
+                      },
+                    ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1),
                     const SizedBox(height: 40),
                   ],
                 ),
