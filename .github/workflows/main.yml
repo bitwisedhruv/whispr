@@ -73,7 +73,7 @@ jobs:
 
       # Build and Deploy with Fastlane
       - name: Build and Deploy using Fastlane
-        run: bundle exec fastlane deploy_alpha
+        run: bundle exec fastlane deploy_production
         working-directory: android
         env:
           GOOGLE_APPLICATION_CREDENTIALS: '${{ steps.auth.outputs.credentials_file_path }}'
