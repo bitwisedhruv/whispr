@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,8 +17,38 @@ import 'package:whispr/features/domain_reliability/presentation/domain_check_scr
 
 import 'package:whispr/features/profile/settings_screen.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late ScrollController _scrollController;
+  double _appBarOpacity = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final newOpacity = (_scrollController.offset / 50).clamp(0.0, 1.0);
+    if (newOpacity != _appBarOpacity) {
+      setState(() {
+        _appBarOpacity = newOpacity;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +57,20 @@ class HomePage extends StatelessWidget {
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
+          backgroundColor: WhisprTheme.backgroundColor.withValues(
+            alpha: _appBarOpacity * 0.8,
+          ),
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          flexibleSpace: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: _appBarOpacity * 10,
+                sigmaY: _appBarOpacity * 10,
+              ),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
           title: const Text('Whispr'),
           actions: [
             IconButton(
@@ -50,6 +95,7 @@ class HomePage extends StatelessWidget {
           child: BlocBuilder<AuthenticatorBloc, AuthenticatorState>(
             builder: (context, state) {
               return SingleChildScrollView(
+                controller: _scrollController,
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

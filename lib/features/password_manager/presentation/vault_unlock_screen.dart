@@ -191,11 +191,32 @@ class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: WhisprTheme.backgroundColor,
-        title: const Text('Reset Vault?'),
-        content: const Text(
-          'This will permanently delete your stored PIN and salt. '
-          'Your existing passwords and TOTP codes will be lost if you don\'t remember your original PIN.',
-          style: TextStyle(color: Colors.white70),
+        title: const Text(
+          'RESET VAULT?',
+          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '⚠️ PERMANENT DATA LOSS WARNING ',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Resetting your vault will delete your old encryption keys. '
+              'Any passwords or TOTP accounts synced to your account will remain encrypted with the OLD key and become permanently UNREADABLE.',
+              style: TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'If you don\'t remember your original PIN, this data is lost forever. You will need to delete the old entries and add them again.',
+              style: TextStyle(color: Colors.white30, fontSize: 12),
+            ),
+          ],
         ),
         actions: [
           TextButton(

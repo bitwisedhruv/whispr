@@ -35,4 +35,12 @@ class AuthenticatorRepository {
   Future<void> deleteAuthenticator(String id) async {
     await _client.from('authenticators').delete().eq('id', id);
   }
+
+  Future<void> updateAuthenticator(AuthenticatorModel authenticator) async {
+    assert(authenticator.id != null, 'Authenticator ID cannot be null for updates');
+    await _client
+        .from('authenticators')
+        .update(authenticator.toJson())
+        .eq('id', authenticator.id!);
+  }
 }

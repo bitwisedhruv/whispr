@@ -160,4 +160,31 @@ class VaultManager {
       return null;
     }
   }
+
+  /// Verifies if a PIN is correct without setting it as the session key.
+  Future<bool> verifyPin(String pin) async {
+    try {
+      final storedPin = await _storage.read(key: _pinKey);
+      return storedPin == pin;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Updates the vault with a new PIN.
+  /// Note: The caller is responsible for re-encrypting data before/after calling this if needed.
+  Future<void> changePin(String newPin) async {
+    try {
+      final salt = await _storage.read(key: _saltKey) ??
+          DateTime.now().millisecondsSinceEpoch.toString();
+
+      await _storage.write(key: _pinKey, value: newPin);
+      await _storage.write(key: _saltKey, value: salt);
+
+      // Update session key
+      _sessionKey = await _encryptionService.deriveKey(newPin, salt);
+    } catch (e) {
+      throw Exception('Failed to change PIN: ${e.toString()}');
+    }
+  }
 }

@@ -39,6 +39,16 @@ class SupabaseService {
     );
   }
 
+  static Future<void> resetPassword(String email) async {
+    await client.auth.resetPasswordForEmail(email);
+  }
+
+  static Future<void> updateUserPassword(String newPassword) async {
+    await client.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
+  }
+
   static Future<void> signOut() async {
     await client.auth.signOut();
   }

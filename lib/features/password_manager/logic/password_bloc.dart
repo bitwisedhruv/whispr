@@ -22,6 +22,7 @@ class PasswordBloc extends Bloc<PasswordEvent, PasswordState> {
     on<UnlockVault>(_onUnlockVault);
     on<UnlockVaultWithBiometrics>(_onUnlockVaultWithBiometrics);
     on<LockVault>(_onLockVault);
+    on<DeleteUnrecoverablePasswords>(_onDeleteUnrecoverablePasswords);
   }
 
   Future<void> _onLoadPasswords(
@@ -170,6 +171,22 @@ class PasswordBloc extends Bloc<PasswordEvent, PasswordState> {
   ) async {
     try {
       await _repository.deletePassword(event.id);
+      add(LoadPasswords());
+    } catch (e) {
+      emit(PasswordError(e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteUnrecoverablePasswords(
+    DeleteUnrecoverablePasswords event,
+    Emitter<PasswordState> emit,
+  ) async {
+    try {
+      // Delete multiple items - repository usually handles this one by one or in batch.
+      // Assuming our repository can handle batch or we loop here.
+      for (final id in event.ids) {
+        await _repository.deletePassword(id);
+      }
       add(LoadPasswords());
     } catch (e) {
       emit(PasswordError(e.toString()));

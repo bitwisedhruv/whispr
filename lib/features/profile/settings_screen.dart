@@ -5,6 +5,8 @@ import 'package:whispr/services/supabase_service.dart';
 import 'package:whispr/features/auth/auth_page.dart';
 import 'package:whispr/features/profile/profile_edit_screen.dart';
 import 'package:whispr/core/utils/snackbar_utils.dart';
+import 'package:whispr/features/password_manager/presentation/pin_change_screen.dart';
+import 'package:whispr/features/profile/update_password_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -68,7 +70,37 @@ class SettingsScreen extends StatelessWidget {
                     }
                   }
                 },
-              ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1),
+               ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1),
+              const SizedBox(height: 32),
+              _buildSectionHeader(context, 'Security'),
+              const SizedBox(height: 12),
+              _buildSettingsCard(
+                context,
+                'Change Vault PIN',
+                'Update your secure storage PIN',
+                Icons.lock_reset_rounded,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const PinChangeScreen(),
+                    ),
+                  );
+                },
+              ).animate().fadeIn(delay: 250.ms).slideX(begin: 0.1),
+              const SizedBox(height: 12),
+              _buildSettingsCard(
+                context,
+                'Change Account Password',
+                'Update your login password',
+                Icons.password_rounded,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const UpdatePasswordScreen(),
+                    ),
+                  );
+                },
+              ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1),
               const SizedBox(height: 32),
               _buildSectionHeader(context, 'Danger Zone'),
               const SizedBox(height: 12),

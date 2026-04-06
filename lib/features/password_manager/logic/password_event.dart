@@ -87,3 +87,11 @@ class UnlockVault extends PasswordEvent {
 }
 
 class UnlockVaultWithBiometrics extends PasswordEvent {}
+
+class DeleteUnrecoverablePasswords extends PasswordEvent {
+  final List<String> ids;
+  const DeleteUnrecoverablePasswords(this.ids);
+
+  @override
+  List<Object?> get props => [ids];
+}

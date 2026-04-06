@@ -92,9 +92,16 @@ class PasswordListBody extends StatelessWidget {
                         24,
                         100,
                       ),
-                      itemCount: state.passwords.length,
+                      itemCount: state.passwords.length +
+                          (_hasUnrecoverable(state) ? 1 : 0),
                       itemBuilder: (context, index) {
-                        final password = state.passwords[index];
+                        if (_hasUnrecoverable(state) && index == 0) {
+                          return _buildCleanupHeader(context, state);
+                        }
+
+                        final passwordIndex =
+                            _hasUnrecoverable(state) ? index - 1 : index;
+                        final password = state.passwords[passwordIndex];
                         return _buildPasswordCard(context, password, state);
                       },
                     ),
@@ -201,16 +208,36 @@ class PasswordListBody extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        password.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            password.title,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (state.decrypt(password.usernameEncrypted) ==
+                              '••••••••')
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8),
+                              child: Icon(
+                                Icons.warning_amber_rounded,
+                                size: 14,
+                                color: Colors.orangeAccent,
+                              ),
+                            ),
+                        ],
                       ),
                       Text(
                         state.decrypt(password.usernameEncrypted),
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: state.decrypt(password.usernameEncrypted) ==
+                                '••••••••'
+                            ? Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.white24)
+                            : Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
                   ),
@@ -323,6 +350,71 @@ class PasswordListBody extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  bool _hasUnrecoverable(PasswordLoaded state) {
+    return state.passwords.any(
+      (p) => state.decrypt(p.usernameEncrypted) == '••••••••',
+    );
+  }
+
+  Widget _buildCleanupHeader(BuildContext context, PasswordLoaded state) {
+    final unrecoverableIds = state.passwords
+        .where((p) => state.decrypt(p.usernameEncrypted) == '••••••••')
+        .map((p) => p.id)
+        .whereType<String>()
+        .toList();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.orangeAccent.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded,
+                    color: Colors.orangeAccent, size: 20),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Unrecoverable items detected',
+                    style: TextStyle(
+                      color: Colors.orangeAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'These items were encrypted with a different PIN and cannot be read. You should remove them.',
+              style: TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context.read<PasswordBloc>().add(
+                    DeleteUnrecoverablePasswords(unrecoverableIds)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orangeAccent,
+                  foregroundColor: WhisprTheme.backgroundColor,
+                  elevation: 0,
+                ),
+                child: const Text('Clean Up Vault'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

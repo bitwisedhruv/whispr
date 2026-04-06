@@ -69,6 +69,31 @@ class _AuthPageState extends State<AuthPage> {
     }
   }
 
+  Future<void> _handleForgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      WhisprSnackBar.showError(context, 'Please enter your email address first.');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await SupabaseService.resetPassword(email);
+      if (mounted) {
+        WhisprSnackBar.showSuccess(
+          context,
+          'Password reset email sent! Please check your inbox.',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        WhisprSnackBar.showError(context, e);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,6 +178,25 @@ class _AuthPageState extends State<AuthPage> {
                               prefixIcon: Icon(Icons.lock_outline, size: 20),
                             ),
                           ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.1),
+                          if (_isLogin)
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: _isLoading ? null : _handleForgotPassword,
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: const Size(0, 30),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  'Forgot Password?',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Colors.white.withValues(alpha: 0.5),
+                                        fontSize: 12,
+                                      ),
+                                ),
+                              ),
+                            ).animate().fadeIn(delay: 850.ms),
                           const SizedBox(height: 32),
                           ElevatedButton(
                             onPressed: _isLoading ? null : _handleAuth,

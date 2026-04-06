@@ -27,7 +27,11 @@ class PasswordLoaded extends PasswordState {
 
   /// Helper to decrypt a password locally
   String decrypt(String ciphertext) {
-    return EncryptionService().decryptText(ciphertext, sessionKey);
+    try {
+      return EncryptionService().decryptText(ciphertext, sessionKey);
+    } catch (e) {
+      return '••••••••'; // Return placeholder if decryption fails
+    }
   }
 }
 
