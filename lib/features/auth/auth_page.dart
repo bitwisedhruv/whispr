@@ -72,7 +72,8 @@ class _AuthPageState extends State<AuthPage> {
   Future<void> _handleForgotPassword() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
-      WhisprSnackBar.showError(context, 'Please enter your email address first.');
+      WhisprSnackBar.showError(
+          context, 'Please enter your email address first.');
       return;
     }
 
@@ -182,16 +183,22 @@ class _AuthPageState extends State<AuthPage> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: _isLoading ? null : _handleForgotPassword,
+                                onPressed:
+                                    _isLoading ? null : _handleForgotPassword,
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: const Size(0, 30),
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                 ),
                                 child: Text(
                                   'Forgot Password?',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Colors.white.withValues(alpha: 0.5),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.5),
                                         fontSize: 12,
                                       ),
                                 ),

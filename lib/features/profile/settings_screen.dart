@@ -70,7 +70,7 @@ class SettingsScreen extends StatelessWidget {
                     }
                   }
                 },
-               ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1),
+              ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1),
               const SizedBox(height: 32),
               _buildSectionHeader(context, 'Security'),
               const SizedBox(height: 12),

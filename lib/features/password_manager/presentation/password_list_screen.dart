@@ -403,8 +403,9 @@ class PasswordListBody extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => context.read<PasswordBloc>().add(
-                    DeleteUnrecoverablePasswords(unrecoverableIds)),
+                onPressed: () => context
+                    .read<PasswordBloc>()
+                    .add(DeleteUnrecoverablePasswords(unrecoverableIds)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orangeAccent,
                   foregroundColor: WhisprTheme.backgroundColor,

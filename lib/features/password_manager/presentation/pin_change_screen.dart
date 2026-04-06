@@ -9,7 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../logic/password_bloc.dart';
 import '../logic/password_event.dart';
 import 'package:whispr/features/authenticator/logic/authenticator_bloc.dart';
-import 'package:whispr/features/authenticator/logic/authenticator_bloc_states.dart' as auth_states;
+import 'package:whispr/features/authenticator/logic/authenticator_bloc_states.dart'
+    as auth_states;
 
 class PinChangeScreen extends StatefulWidget {
   const PinChangeScreen({super.key});
@@ -60,23 +61,28 @@ class _PinChangeScreenState extends State<PinChangeScreen> {
 
       // 3. Decrypt everything with old key
       final oldKey = vaultManager.sessionKey!;
-      
+
       // 4. Temporarily derive the new key to ensure it works
-      final salt = await vaultManager.getSalt() ?? DateTime.now().millisecondsSinceEpoch.toString();
+      final salt = await vaultManager.getSalt() ??
+          DateTime.now().millisecondsSinceEpoch.toString();
       final newKey = await encryptionService.deriveKey(newPin, salt);
 
       // 5. Re-encrypt all Passwords
       for (final p in currentPasswords) {
-        final username = encryptionService.decryptText(p.usernameEncrypted, oldKey);
-        final passVal = encryptionService.decryptText(p.passwordEncrypted, oldKey);
-        final notes = p.notesEncrypted != null 
-            ? encryptionService.decryptText(p.notesEncrypted!, oldKey) 
+        final username =
+            encryptionService.decryptText(p.usernameEncrypted, oldKey);
+        final passVal =
+            encryptionService.decryptText(p.passwordEncrypted, oldKey);
+        final notes = p.notesEncrypted != null
+            ? encryptionService.decryptText(p.notesEncrypted!, oldKey)
             : null;
 
         final updatedP = p.copyWith(
           usernameEncrypted: encryptionService.encryptText(username, newKey),
           passwordEncrypted: encryptionService.encryptText(passVal, newKey),
-          notesEncrypted: notes != null ? encryptionService.encryptText(notes, newKey) : null,
+          notesEncrypted: notes != null
+              ? encryptionService.encryptText(notes, newKey)
+              : null,
         );
         await passwordRepo.updatePassword(updatedP);
       }
@@ -150,7 +156,9 @@ class _PinChangeScreenState extends State<PinChangeScreen> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: WhisprTheme.backgroundColor),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: WhisprTheme.backgroundColor),
                           )
                         : const Text('Update PIN'),
                   ),
@@ -167,14 +175,16 @@ class _PinChangeScreenState extends State<PinChangeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, color: Colors.white70)),
+        Text(label,
+            style: const TextStyle(fontSize: 14, color: Colors.white70)),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           keyboardType: TextInputType.number,
           obscureText: true,
           maxLength: 6,
-          style: const TextStyle(color: Colors.white, fontSize: 18, letterSpacing: 8),
+          style: const TextStyle(
+              color: Colors.white, fontSize: 18, letterSpacing: 8),
           decoration: const InputDecoration(
             counterText: '',
             hintText: '••••••',

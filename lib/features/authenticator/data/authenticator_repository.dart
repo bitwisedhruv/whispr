@@ -37,7 +37,8 @@ class AuthenticatorRepository {
   }
 
   Future<void> updateAuthenticator(AuthenticatorModel authenticator) async {
-    assert(authenticator.id != null, 'Authenticator ID cannot be null for updates');
+    assert(authenticator.id != null,
+        'Authenticator ID cannot be null for updates');
     await _client
         .from('authenticators')
         .update(authenticator.toJson())

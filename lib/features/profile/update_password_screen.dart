@@ -20,7 +20,8 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
     final confirmPassword = _confirmPasswordController.text;
 
     if (newPassword.length < 6) {
-      WhisprSnackBar.showError(context, 'Password must be at least 6 characters');
+      WhisprSnackBar.showError(
+          context, 'Password must be at least 6 characters');
       return;
     }
 
@@ -34,7 +35,8 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
     try {
       await SupabaseService.updateUserPassword(newPassword);
       if (mounted) {
-        WhisprSnackBar.showSuccess(context, 'Account password updated successfully');
+        WhisprSnackBar.showSuccess(
+            context, 'Account password updated successfully');
         Navigator.pop(context);
       }
     } catch (e) {
@@ -72,7 +74,8 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                 const SizedBox(height: 32),
                 _buildPasswordField('New Password', _newPasswordController),
                 const SizedBox(height: 16),
-                _buildPasswordField('Confirm New Password', _confirmPasswordController),
+                _buildPasswordField(
+                    'Confirm New Password', _confirmPasswordController),
                 const SizedBox(height: 48),
                 SizedBox(
                   width: double.infinity,
@@ -85,7 +88,9 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: WhisprTheme.backgroundColor),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: WhisprTheme.backgroundColor),
                           )
                         : const Text('Update Account Password'),
                   ),
@@ -102,7 +107,8 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, color: Colors.white70)),
+        Text(label,
+            style: const TextStyle(fontSize: 14, color: Colors.white70)),
         const SizedBox(height: 8),
         TextField(
           controller: controller,

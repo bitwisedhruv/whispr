@@ -193,7 +193,8 @@ class _VaultUnlockScreenState extends State<VaultUnlockScreen> {
         backgroundColor: WhisprTheme.backgroundColor,
         title: const Text(
           'RESET VAULT?',
-          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+          style:
+              TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
