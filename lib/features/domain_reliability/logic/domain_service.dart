@@ -31,11 +31,13 @@ class DomainService {
         if (tavilyResponse.statusCode == 200) {
           final results = tavilyResponse.data['results'] as List<dynamic>?;
           if (results != null && results.isNotEmpty) {
-            crawledContent = results[0]['raw_content'] ?? "No text content found.";
-            
+            crawledContent =
+                results[0]['raw_content'] ?? "No text content found.";
+
             // Basic truncation to avoid extremely large payloads (optional, Gemini 2.5 flash can handle large inputs, but just in case for memory)
             if (crawledContent.length > 50000) {
-              crawledContent = crawledContent.substring(0, 50000) + "...[truncated]";
+              crawledContent =
+                  crawledContent.substring(0, 50000) + "...[truncated]";
             }
           }
         }
