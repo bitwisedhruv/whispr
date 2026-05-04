@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../data/domain_report.dart';
@@ -37,12 +38,12 @@ class DomainService {
             // Basic truncation to avoid extremely large payloads (optional, Gemini 2.5 flash can handle large inputs, but just in case for memory)
             if (crawledContent.length > 50000) {
               crawledContent =
-                  crawledContent.substring(0, 50000) + "...[truncated]";
+                  '${crawledContent.substring(0, 50000)}...[truncated]';
             }
           }
         }
       } catch (e) {
-        print("Tavily crawling failed: $e");
+        developer.log("Tavily crawling failed: $e");
       }
     }
 
