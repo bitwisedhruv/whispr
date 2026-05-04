@@ -74,7 +74,8 @@ void main() {
         ),
       );
 
-      final service = DomainService(dio: dio, apiKey: 'test_api_key', tavilyApiKey: '');
+      final service =
+          DomainService(dio: dio, apiKey: 'test_api_key', tavilyApiKey: '');
       final report = await service.analyzeDomain('https://safe-domain.com');
 
       expect(report.url, 'https://safe-domain.com');
@@ -107,7 +108,8 @@ void main() {
         ));
       }));
 
-      final service = DomainService(dio: dio, apiKey: 'test_api_key', tavilyApiKey: '');
+      final service =
+          DomainService(dio: dio, apiKey: 'test_api_key', tavilyApiKey: '');
 
       expect(
         () async => await service.analyzeDomain('https://bad-domain.com'),
