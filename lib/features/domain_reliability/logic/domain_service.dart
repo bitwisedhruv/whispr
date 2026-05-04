@@ -6,14 +6,42 @@ import '../data/domain_report.dart';
 class DomainService {
   final Dio _dio;
   final String _apiKey;
+  final String _tavilyApiKey;
 
-  DomainService({Dio? dio, String? apiKey})
+  DomainService({Dio? dio, String? apiKey, String? tavilyApiKey})
       : _dio = dio ?? Dio(),
-        _apiKey = apiKey ?? dotenv.env['GEMINI_API_KEY'] ?? '';
+        _apiKey = apiKey ?? dotenv.env['GEMINI_API_KEY'] ?? '',
+        _tavilyApiKey = tavilyApiKey ?? dotenv.env['TAVILLY_API_KEY'] ?? '';
 
   Future<DomainReport> analyzeDomain(String domain) async {
     if (_apiKey.isEmpty) {
       throw Exception('AI analysis unavailable: API Key missing.');
+    }
+
+    String crawledContent = "No content available.";
+    if (_tavilyApiKey.isNotEmpty) {
+      try {
+        final tavilyResponse = await _dio.post(
+          'https://api.tavily.com/extract',
+          data: {
+            'api_key': _tavilyApiKey,
+            'urls': [domain],
+          },
+        );
+        if (tavilyResponse.statusCode == 200) {
+          final results = tavilyResponse.data['results'] as List<dynamic>?;
+          if (results != null && results.isNotEmpty) {
+            crawledContent = results[0]['raw_content'] ?? "No text content found.";
+            
+            // Basic truncation to avoid extremely large payloads (optional, Gemini 2.5 flash can handle large inputs, but just in case for memory)
+            if (crawledContent.length > 50000) {
+              crawledContent = crawledContent.substring(0, 50000) + "...[truncated]";
+            }
+          }
+        }
+      } catch (e) {
+        print("Tavily crawling failed: $e");
+      }
     }
 
     final String url =
@@ -21,8 +49,12 @@ class DomainService {
 
     final prompt = '''
 You are a cybersecurity expert. Analyze the following domain/URL for reliability, phishing risks, scams, and overall safety.
+You are provided with the raw content crawled from the URL by a deep search tool. Use this content to make a highly accurate and comprehensive assessment.
 Provide a risk score out of 100 (where 100 is perfectly safe and 0 is extremely dangerous).
 URL to analyze: "$domain"
+
+Crawled content:
+$crawledContent
 
 Respond ONLY with a valid JSON document containing the following keys:
 - "url": The exact url you analyzed
