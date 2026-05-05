@@ -17,6 +17,7 @@ class _DomainCheckScreenState extends State<DomainCheckScreen> {
   final DomainService _domainService = DomainService();
 
   bool _isLoading = false;
+  bool _hasReported = false;
   DomainReport? _report;
   String? _error;
 
@@ -28,6 +29,7 @@ class _DomainCheckScreenState extends State<DomainCheckScreen> {
       _isLoading = true;
       _report = null;
       _error = null;
+      _hasReported = false;
     });
 
     try {
@@ -262,6 +264,80 @@ class _DomainCheckScreenState extends State<DomainCheckScreen> {
                   color: Colors.white70,
                 ),
               ),
+              const SizedBox(height: 24),
+              const Divider(color: Colors.white24),
+              const SizedBox(height: 16),
+              if (_hasReported)
+                const Center(
+                  child: Text(
+                    'Thank you for your feedback! This helps us improve our AI analysis.',
+                    style: TextStyle(
+                        color: Colors.greenAccent, fontStyle: FontStyle.italic),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Was this analysis accurate?',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              _domainService.reportAnalysis(
+                                  _urlController.text.trim(), true);
+                              setState(() {
+                                _hasReported = true;
+                              });
+                            },
+                            icon: const Icon(Icons.thumb_up_alt_outlined,
+                                size: 18),
+                            label: const Text('Yes'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white38),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              _domainService.reportAnalysis(
+                                  _urlController.text.trim(), false);
+                              setState(() {
+                                _hasReported = true;
+                              });
+                            },
+                            icon: const Icon(Icons.thumb_down_alt_outlined,
+                                size: 18),
+                            label: const Text('No'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white38),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
             ],
           ),
         ),

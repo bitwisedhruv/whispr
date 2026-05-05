@@ -8,7 +8,7 @@ class SupabaseService {
   // Initialize Supabase (Call this in main.dart)
   static Future<void> init() async {
     await Supabase.initialize(
-      url: AppConfig.supabaseUrl, 
+      url: AppConfig.supabaseUrl,
       anonKey: AppConfig.supabaseAnonKey,
     );
   }
