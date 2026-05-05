@@ -32,11 +32,7 @@ jobs:
       - name: Verify Flutter formatting
         run: dart format --set-exit-if-changed .
 
-      - name: Create .env file for build
-        run: |
-          echo "SUPABASE_PROJECT_URL=${{ secrets.SUPABASE_PROJECT_URL }}" > .env
-          echo "SUPABASE_PUBLIC_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
-          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+
 
       - name: Analyze project source
         run: flutter analyze

@@ -1,31 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:whispr/core/config.dart';
 import 'dart:io';
 
 void main() {
   group('Supabase Configuration & Auth Integration Tests', () {
-    setUpAll(() async {
-      // Ensure dotenv loads the test environment keys
-      try {
-        await dotenv.load(fileName: '.env');
-      } catch (e) {
-        // Fallback or ignore if handled by CI via env vars directly
-      }
-    });
-
     test('Environment variables contain valid URL and Key', () {
-      final url = dotenv.env['SUPABASE_PROJECT_URL'];
-      final anonKey = dotenv.env['SUPABASE_PUBLIC_ANON_KEY'];
+      final url = AppConfig.supabaseUrl;
+      final anonKey = AppConfig.supabaseAnonKey;
 
-      expect(url, isNotNull,
-          reason: 'SUPABASE_PROJECT_URL missing from environment');
-      expect(url!.startsWith('https://'), isTrue,
+      expect(url.startsWith('https://'), isTrue,
           reason: 'URL should be secure');
 
-      expect(anonKey, isNotNull,
-          reason: 'SUPABASE_PUBLIC_ANON_KEY missing from environment');
-      expect(anonKey!.isNotEmpty, isTrue, reason: 'Key should not be empty');
+      expect(anonKey.isNotEmpty, isTrue, reason: 'Key should not be empty');
 
       // Warn about webhook secret formatting rather than failing strictly, because testing env might flex
       if (anonKey.startsWith('sb_secret_')) {
@@ -35,16 +22,10 @@ void main() {
       }
     });
 
-    test('Supabase can be initialized with the environment variables',
+    test('Supabase can be initialized with the configuration variables',
         () async {
-      final url = dotenv.env['SUPABASE_PROJECT_URL'];
-      final anonKey = dotenv.env['SUPABASE_PUBLIC_ANON_KEY'];
-
-      if (url == null || anonKey == null) {
-        markTestSkipped(
-            'Skipping initialization test because env variables are missing');
-        return;
-      }
+      final url = AppConfig.supabaseUrl;
+      final anonKey = AppConfig.supabaseAnonKey;
 
       try {
         final client = SupabaseClient(url, anonKey);
@@ -58,8 +39,7 @@ void main() {
         () async {
       // Note: To test this safely without breaking the main instance, we rely on the init test.
       // Here we verify the REST API behaviour natively like the diagnostic scripts did.
-      final url = dotenv.env['SUPABASE_PROJECT_URL'] ??
-          'https://mxtfgqdrjdhcqvpqbdzh.supabase.co';
+      final url = AppConfig.supabaseUrl;
 
       final request = await HttpClient()
           .postUrl(Uri.parse('$url/auth/v1/token?grant_type=password'));

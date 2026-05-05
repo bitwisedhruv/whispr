@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:whispr/core/config.dart';
 import 'dart:io';
 
 class SupabaseService {
@@ -7,16 +7,10 @@ class SupabaseService {
 
   // Initialize Supabase (Call this in main.dart)
   static Future<void> init() async {
-    await dotenv.load(fileName: ".env");
-
-    final url = dotenv.env['SUPABASE_PROJECT_URL'];
-    final anonKey = dotenv.env['SUPABASE_PUBLIC_ANON_KEY'];
-
-    if (url == null || anonKey == null) {
-      throw Exception('Supabase credentials not found in .env file');
-    }
-
-    await Supabase.initialize(url: url, anonKey: anonKey);
+    await Supabase.initialize(
+      url: AppConfig.supabaseUrl, 
+      anonKey: AppConfig.supabaseAnonKey,
+    );
   }
 
   // Auth Methods
