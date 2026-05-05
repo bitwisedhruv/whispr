@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/domain_report.dart';
 
@@ -35,7 +36,7 @@ class DomainService {
       );
     } catch (e) {
       // Silently handle error for reporting, or print in debug mode
-      print("Failed to report analysis: $e");
+      debugPrint("Failed to report analysis: $e");
     }
   }
 }
