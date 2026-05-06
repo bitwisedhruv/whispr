@@ -29,7 +29,7 @@ platform :android do
     # Upload to Play Store Closed Testing Track (Alpha)
     upload_to_play_store(
       track: 'production',
-      aab: '../build/app/outputs/bundle/release/app-release.aab',
+      aab: '../../build/app/outputs/bundle/release/app-release.aab',
       json_key: ENV['GOOGLE_APPLICATION_CREDENTIALS'],
       skip_upload_apk: true,
       skip_upload_metadata: true,
