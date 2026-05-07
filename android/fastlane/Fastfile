@@ -18,18 +18,16 @@ default_platform(:android)
 platform :android do
   desc "Run tests, build, and deploy to production track"
   lane :deploy_production do
-    # Run Flutter tests
+    # Run Flutter tests and Build App Bundle from the flutter root directory
     Dir.chdir("../..") do
       sh "flutter test"
+      sh "flutter build appbundle --release"
     end
-
-    # Build App Bundle using Flutter to ensure versions from pubspec.yaml are injected
-    sh "flutter build appbundle --release"
 
     # Upload to Play Store Closed Testing Track (Alpha)
     upload_to_play_store(
       track: 'production',
-      aab: '../../build/app/outputs/bundle/release/app-release.aab',
+      aab: '../build/app/outputs/bundle/release/app-release.aab',
       json_key: ENV['GOOGLE_APPLICATION_CREDENTIALS'],
       skip_upload_apk: true,
       skip_upload_metadata: true,
