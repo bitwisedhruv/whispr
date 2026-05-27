@@ -16,13 +16,15 @@ void main() {
       expect(base32Regex.hasMatch('JBSWY3DPEHPK3PX8'), isFalse);
       expect(base32Regex.hasMatch('JBSWY3DPEHPK3PX0'), isFalse);
       expect(base32Regex.hasMatch('JBSWY3DPEHPK3PX9'), isFalse);
-      expect(base32Regex.hasMatch('jbswy3dpehpk3pxp'), isFalse); // regex expects uppercase after normalization
+      expect(base32Regex.hasMatch('jbswy3dpehpk3pxp'),
+          isFalse); // regex expects uppercase after normalization
       expect(base32Regex.hasMatch('JBSWY3DPEHPK3PXP!'), isFalse);
     });
 
     test('Strips spaces and dashes and converts to uppercase', () {
       const rawSecret = ' jbsw-y3dp-ehpk-3pxp ';
-      final normalizedSecret = rawSecret.replaceAll(RegExp(r'[\s\-]'), '').toUpperCase();
+      final normalizedSecret =
+          rawSecret.replaceAll(RegExp(r'[\s\-]'), '').toUpperCase();
       expect(normalizedSecret, 'JBSWY3DPEHPK3PXP');
     });
 

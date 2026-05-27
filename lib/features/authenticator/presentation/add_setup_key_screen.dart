@@ -33,17 +33,20 @@ class _AddSetupKeyScreenState extends State<AddSetupKeyScreen> {
     final notes = _notesController.text.trim();
 
     if (issuer.isEmpty) {
-      WhisprSnackBar.showError(context, 'Issuer is required (e.g. Google, GitHub)');
+      WhisprSnackBar.showError(
+          context, 'Issuer is required (e.g. Google, GitHub)');
       return;
     }
 
     if (account.isEmpty) {
-      WhisprSnackBar.showError(context, 'Account Name is required (e.g. your email)');
+      WhisprSnackBar.showError(
+          context, 'Account Name is required (e.g. your email)');
       return;
     }
 
     // Normalize Secret Key: Remove all spaces/dashes and convert to uppercase
-    final normalizedSecret = rawSecret.replaceAll(RegExp(r'[\s\-]'), '').toUpperCase();
+    final normalizedSecret =
+        rawSecret.replaceAll(RegExp(r'[\s\-]'), '').toUpperCase();
 
     if (normalizedSecret.isEmpty) {
       WhisprSnackBar.showError(context, 'Secret Key is required');
@@ -138,7 +141,10 @@ class _AddSetupKeyScreenState extends State<AddSetupKeyScreen> {
                 icon: Icons.notes,
                 maxLines: 2,
               ),
-            ].animate(interval: 50.ms).fadeIn(duration: 400.ms).slideY(begin: 0.05, curve: Curves.easeOutQuad),
+            ]
+                .animate(interval: 50.ms)
+                .fadeIn(duration: 400.ms)
+                .slideY(begin: 0.05, curve: Curves.easeOutQuad),
           ),
         ),
       ),

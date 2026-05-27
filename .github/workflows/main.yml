@@ -40,38 +40,48 @@ jobs:
       - name: Run tests
         run: flutter test
 
-      # Setup Ruby for Fastlane
+      # Setup Ruby for Fastlane (only on push to main)
       - uses: ruby/setup-ruby@v1
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           ruby-version: '3.2'
           bundler-cache: true
           working-directory: android
 
-      # Decode Keystore
+      # Decode Keystore (only on push to main)
       - name: Decode Keystore
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
 
-      # Create key.properties
+      # Create key.properties (only on push to main)
       - name: Create key.properties
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           echo "storePassword=${{ secrets.STORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=upload-keystore.jks" >> android/key.properties
 
-      # Authenticate with Google Cloud using WIF
+      # Authenticate with Google Cloud using WIF (only on push to main)
       - id: 'auth'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: 'google-github-actions/auth@v2'
         with:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      # Build and Deploy with Fastlane
+      # Build and Deploy with Fastlane (only on push to main)
       - name: Build and Deploy using Fastlane
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: bundle exec fastlane deploy_production
         working-directory: android
         env:
           GOOGLE_APPLICATION_CREDENTIALS: '${{ steps.auth.outputs.credentials_file_path }}'
+
+      # Build dry-run verification for Pull Requests (without signing or publishing)
+      - name: Build Dry-Run APK (PR validation)
+        if: github.event_name == 'pull_request'
+        run: flutter build apk --debug
 
   # build_ios job would go here (requires macOS runner)

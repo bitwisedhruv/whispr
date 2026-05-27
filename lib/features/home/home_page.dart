@@ -256,7 +256,8 @@ class _HomePageState extends State<HomePage> {
                     }
                   }
                 } else if (choice == 'key') {
-                  final result = await Navigator.of(context).push<Map<String, String?>>(
+                  final result =
+                      await Navigator.of(context).push<Map<String, String?>>(
                     MaterialPageRoute(
                       builder: (context) => const AddSetupKeyScreen(),
                     ),
