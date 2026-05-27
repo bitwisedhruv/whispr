@@ -8,6 +8,7 @@ import 'package:whispr/features/password_manager/presentation/password_generator
 import 'package:whispr/features/authenticator/logic/authenticator_bloc.dart';
 import 'package:whispr/features/authenticator/logic/authenticator_bloc_states.dart';
 import 'package:whispr/features/authenticator/presentation/qr_scanner_screen.dart';
+import 'package:whispr/features/authenticator/presentation/add_setup_key_screen.dart';
 import 'package:whispr/features/password_manager/logic/vault_manager.dart';
 import 'package:whispr/features/password_manager/presentation/vault_unlock_screen.dart';
 import 'package:whispr/features/security_audit/presentation/security_audit_screen.dart';
@@ -237,16 +238,34 @@ class _HomePageState extends State<HomePage> {
           builder: (context) {
             return FloatingActionButton(
               onPressed: () async {
-                final result = await Navigator.of(context).push<String>(
-                  MaterialPageRoute(
-                    builder: (context) => const QRScannerScreen(),
-                  ),
-                );
-                if (result != null && context.mounted) {
-                  final note = await _showAddNoteDialog(context);
-                  if (context.mounted) {
+                final choice = await _showAddAuthenticatorOptions(context);
+                if (choice == null || !context.mounted) return;
+
+                if (choice == 'scan') {
+                  final result = await Navigator.of(context).push<String>(
+                    MaterialPageRoute(
+                      builder: (context) => const QRScannerScreen(),
+                    ),
+                  );
+                  if (result != null && context.mounted) {
+                    final note = await _showAddNoteDialog(context);
+                    if (context.mounted) {
+                      context.read<AuthenticatorBloc>().add(
+                            AddAuthenticator(result, note: note),
+                          );
+                    }
+                  }
+                } else if (choice == 'key') {
+                  final result = await Navigator.of(context).push<Map<String, String?>>(
+                    MaterialPageRoute(
+                      builder: (context) => const AddSetupKeyScreen(),
+                    ),
+                  );
+                  if (result != null && context.mounted) {
+                    final uri = result['uri']!;
+                    final note = result['note'];
                     context.read<AuthenticatorBloc>().add(
-                          AddAuthenticator(result, note: note),
+                          AddAuthenticator(uri, note: note),
                         );
                   }
                 }
@@ -594,6 +613,117 @@ class _HomePageState extends State<HomePage> {
     String subtitle,
     IconData icon, {
     VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 24, color: Colors.white),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, size: 20, color: Color(0xFF475569)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<String?> _showAddAuthenticatorOptions(BuildContext context) {
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (c) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        decoration: const BoxDecoration(
+          color: WhisprTheme.backgroundColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border(
+            top: BorderSide(color: Colors.white10),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 8, bottom: 24),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Text(
+                'Add Authenticator',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Choose how you want to add your verification code',
+                style: TextStyle(color: WhisprTheme.secondaryTextColor),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              _buildChoiceCard(
+                context,
+                title: 'Scan QR Code',
+                subtitle: 'Scan a QR code using your device camera',
+                icon: Icons.qr_code_scanner_outlined,
+                onTap: () => Navigator.pop(c, 'scan'),
+              ),
+              const SizedBox(height: 16),
+              _buildChoiceCard(
+                context,
+                title: 'Enter Setup Key',
+                subtitle: 'Manually enter the details and secret key',
+                icon: Icons.vpn_key_outlined,
+                onTap: () => Navigator.pop(c, 'key'),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChoiceCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
