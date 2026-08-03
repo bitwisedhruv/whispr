@@ -73,6 +73,14 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           title: const Text('Whispr'),
+          flexibleSpace: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+              child: Container(
+                color: Colors.transparent,
+              ),
+            ),
+          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.settings_outlined, size: 22),
